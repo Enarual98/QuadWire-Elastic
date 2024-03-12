@@ -36,9 +36,6 @@ nu = 0.3  # poisson ratio
 alpha = 1.13e-5  # thermal expansion coefficient
 behavior_opt = True # use the optimized behavior
 
-### Thermal variation
-path = r"C:\Users\viano\Documents\GitHub\QuadWire-Elastic\thermal_data\carpet"
-
 ### Plot
 toPlot = False # True if you want to see the evolution of the field during printing
 colormap = "stt" # Field to observe on the graph
@@ -51,8 +48,9 @@ color3 = "#556B2F"
 
 #%% Carpet 
 
-### Carpet
+### Parameters
 buildDirection = "h"
+path = r"C:\Users\viano\Documents\GitHub\QuadWire-Elastic\thermal_data\carpet"
 
 ### Computation
 U, Eps, Sigma, elementEnergyDensity, qp2elem, nQP, x, Elems = qwa.additive(path, L, Hn, Hb, meshType, nNodes, nLayers,
@@ -93,9 +91,9 @@ colorbar.set_label('$\sigma_{tn}$ [MPa]')
 
 
 #%% Wall 
-
-### Wall
+### Parameters
 buildDirection = "v"
+path = r"C:\Users\viano\Documents\GitHub\QuadWire-Elastic\thermal_data\wall"
 
 ### Computation
 U, Eps, Sigma, elementEnergyDensity, qp2elem, nQP, x, Elems = qwa.additive(path, L, Hn, Hb, meshType, nNodes, nLayers,
