@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>modules.behavior &mdash; QuadWire 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=8d563738"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            QuadWire
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">modules package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">QuadWire</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">modules.behavior</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for modules.behavior</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Module defining the mechanical behaviour of the QuadWire model&quot;&quot;&quot;</span>
+
+<span class="c1">#%% import packages</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy</span> <span class="k">as</span> <span class="nn">sp</span>
+<span class="c1">#%% Comportement</span>
+
+<div class="viewcode-block" id="derivation_xi">
+<a class="viewcode-back" href="../../modules.html#modules.behavior.derivation_xi">[docs]</a>
+<span class="k">def</span> <span class="nf">derivation_xi</span><span class="p">(</span><span class="n">Hn</span><span class="p">,</span> <span class="n">Hb</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">Ds</span><span class="p">):</span> <span class="c1">#strain matrix ? B_chi B_xi</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that returns the first gradient derivation matrix </span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Hn : float</span>
+<span class="sd">        Length of the section of the bead in the n direction.</span>
+<span class="sd">    Hb : float</span>
+<span class="sd">        Length of the section of the bead in the b direction.</span>
+<span class="sd">    N : sparse matrix of shape (nQP, nUncNodes) </span>
+<span class="sd">        Function of interpolation at the quadrature points : f(Xqp) = N.f(Xunc)</span>
+<span class="sd">    Ds : sparse matrix of shape (nQP, nUncNodes)</span>
+<span class="sd">        Function derivation in LENGTH coordinates : df_ds(Xqp) = Ds.f(Xunc).</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Btot : sparse matrix of shape (6*nQP, nNodeDOF)</span>
+<span class="sd">        First gradient derivation matrix.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Initialisation of arrays of size (6,12) </span>
+    <span class="n">B0</span><span class="p">,</span> <span class="n">B1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">6</span><span class="p">,</span> <span class="mi">12</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">6</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span> 
+    
+    <span class="c1"># Fill non zero values</span>
+    <span class="n">B0</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">B0</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="n">B0</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">B0</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">B0</span><span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="n">B0</span><span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">Hn</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="n">Hb</span><span class="p">,</span> <span class="mf">0.5</span><span class="o">/</span><span class="n">Hn</span><span class="p">,</span> <span class="mf">0.5</span><span class="o">/</span><span class="n">Hb</span><span class="p">,</span> <span class="mf">0.5</span><span class="o">/</span><span class="n">Hb</span><span class="p">,</span> <span class="mf">0.5</span><span class="o">/</span><span class="n">Hn</span>
+    <span class="n">B1</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">B1</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">B1</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span>
+    <span class="c1"># Assembling (6*nQP, nUncDOF=12*nQP)</span>
+    <span class="n">Btot</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">B0</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span> <span class="o">+</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">B1</span><span class="p">,</span> <span class="n">Ds</span><span class="p">)</span>   
+
+    <span class="k">return</span> <span class="n">Btot</span></div>
+
+
+<div class="viewcode-block" id="derivation_chi">
+<a class="viewcode-back" href="../../modules.html#modules.behavior.derivation_chi">[docs]</a>
+<span class="k">def</span> <span class="nf">derivation_chi</span><span class="p">(</span><span class="n">Hn</span><span class="p">,</span> <span class="n">Hb</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">Ds</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that returns the second gradient derivation matrix</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Hn : float</span>
+<span class="sd">        Length of the section of the bead in the n direction.</span>
+<span class="sd">    Hb : float</span>
+<span class="sd">        Length of the section of the bead in the b direction.</span>
+<span class="sd">    N : sparse matrix of shape (nQP, nUncNodes) </span>
+<span class="sd">        Function of interpolation at the quadrature points : f(Xqp) = N.f(Xunc)</span>
+<span class="sd">    Ds : sparse matrix of shape (nQP, nUncNodes)</span>
+<span class="sd">        Function derivation in LENGTH coordinates : df_ds(Xqp) = Ds.f(Xunc).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Ctot : sparse matrix of shape (9*nQP, nNodeDOF)</span>
+<span class="sd">        Second gradient derivation matrix.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Initialisation of arrays of size (9,12)</span>
+    <span class="n">C0</span><span class="p">,</span> <span class="n">C1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">9</span><span class="p">,</span> <span class="mi">12</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">9</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>  <span class="c1"># (9x12)</span>
+    
+    <span class="c1"># Fill non zero values</span>
+    <span class="n">C0</span><span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">C0</span><span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="n">C0</span><span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">11</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">Hn</span><span class="o">*</span><span class="n">Hb</span><span class="p">),</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">Hn</span><span class="o">*</span><span class="n">Hb</span><span class="p">),</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">Hn</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+    <span class="n">C1</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">C1</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">C1</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">9</span><span class="p">],</span> <span class="n">C1</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">C1</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="n">C1</span><span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">Hn</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="n">Hn</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="n">Hn</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="n">Hb</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="n">Hb</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="n">Hb</span>
+    <span class="c1"># Assembling </span>
+    <span class="n">Ctot</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">C0</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span> <span class="o">+</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">C1</span><span class="p">,</span> <span class="n">Ds</span><span class="p">)</span>  <span class="c1"># (9*nQP, nUncDOF=12*nQP)</span>
+    
+    <span class="k">return</span> <span class="n">Ctot</span></div>
+
+
+<div class="viewcode-block" id="homogeneization_Rxi">
+<a class="viewcode-back" href="../../modules.html#modules.behavior.homogeneization_Rxi">[docs]</a>
+<span class="k">def</span> <span class="nf">homogeneization_Rxi</span><span class="p">(</span><span class="n">Hn</span><span class="p">,</span> <span class="n">Hb</span><span class="p">,</span> <span class="n">lmbda</span><span class="p">,</span> <span class="n">mu</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that returns the elemental material behavior matrix for deformation obtained through an homogeneisation process</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Hn : float</span>
+<span class="sd">        Length of the section of the bead in the n direction.</span>
+<span class="sd">    Hb : float</span>
+<span class="sd">        Length of the section of the bead in the b direction.</span>
+<span class="sd">    lmbda : float</span>
+<span class="sd">        First Lamé coefficient.</span>
+<span class="sd">    mu : float</span>
+<span class="sd">        Second Lamé coefficient or shear modulus.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Rxi : sparse matrix of shape (6, 6)</span>
+<span class="sd">        Elemental material behavior matrix for deformation obtained through an homogeneisation process.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Rxi</span> <span class="o">=</span> <span class="n">Hn</span> <span class="o">*</span> <span class="n">Hb</span> <span class="o">*</span> <span class="n">sp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">block_diag</span><span class="p">(</span><span class="n">lmbda</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">mu</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">mu</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>  <span class="c1"># (6x6)</span>
+    <span class="n">Rxi</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span><span class="n">Rxi</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Rxi</span></div>
+
+
+<div class="viewcode-block" id="homogenization_Rchi">
+<a class="viewcode-back" href="../../modules.html#modules.behavior.homogenization_Rchi">[docs]</a>
+<span class="k">def</span> <span class="nf">homogenization_Rchi</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">Hn</span><span class="p">,</span> <span class="n">Hb</span><span class="p">,</span> <span class="n">lmbda</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">nNodes</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that returns the elemental material behavior matrix for curvature obtained through an homogeneisation process</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    L : int</span>
+<span class="sd">        Length of the structure in tangential direction t.</span>
+<span class="sd">    Hn : float</span>
+<span class="sd">        Length of the section of the bead in the n direction.</span>
+<span class="sd">    Hb : float</span>
+<span class="sd">        Length of the section of the bead in the b direction.</span>
+<span class="sd">    lmbda : float</span>
+<span class="sd">        First Lamé coefficient.</span>
+<span class="sd">    mu : float</span>
+<span class="sd">        Second Lamé coefficient or shear modulus.</span>
+<span class="sd">    nNodes : int</span>
+<span class="sd">        Number of nodes discretising the length L.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Rchi : sparse matrix of shape (9, 9)</span>
+<span class="sd">        Elemental material behavior matrix for curvature obtained through an homogeneisation process.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">ln</span> <span class="o">=</span> <span class="n">Hn</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
+    <span class="n">lb</span> <span class="o">=</span> <span class="n">Hb</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
+    <span class="n">lt</span> <span class="o">=</span> <span class="n">L</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">nNodes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+    
+    <span class="n">Rchi_t</span> <span class="o">=</span> <span class="n">mu</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]])</span>
+    <span class="n">Rchi_t</span> <span class="o">+=</span> <span class="n">lmbda</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]])</span>
+    <span class="n">Rchi_t</span> <span class="o">*=</span> <span class="n">Hn</span> <span class="o">*</span> <span class="n">Hb</span> <span class="o">*</span> <span class="n">lt</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="n">Rchi_n</span> <span class="o">=</span> <span class="n">mu</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">2.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">]])</span>
+    <span class="n">Rchi_n</span> <span class="o">+=</span> <span class="n">lmbda</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]])</span>
+    <span class="n">Rchi_n</span> <span class="o">*=</span> <span class="n">Hn</span> <span class="o">*</span> <span class="n">Hb</span> <span class="o">*</span> <span class="n">ln</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="n">Rchi_b</span> <span class="o">=</span> <span class="n">mu</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]])</span>
+    <span class="n">Rchi_b</span> <span class="o">+=</span> <span class="n">lmbda</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]])</span>
+    <span class="n">Rchi_b</span> <span class="o">*=</span> <span class="n">Hn</span> <span class="o">*</span> <span class="n">Hb</span> <span class="o">*</span> <span class="n">lb</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="n">Rchi</span> <span class="o">=</span> <span class="n">Rchi_t</span> <span class="o">+</span> <span class="n">Rchi_n</span> <span class="o">+</span> <span class="n">Rchi_b</span>  <span class="c1"># (9,9)</span>
+    
+    <span class="n">Rchi</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span><span class="n">Rchi</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Rchi</span></div>
+
+
+<div class="viewcode-block" id="optimization_Rxi_Rchi">
+<a class="viewcode-back" href="../../modules.html#modules.behavior.optimization_Rxi_Rchi">[docs]</a>
+<span class="k">def</span> <span class="nf">optimization_Rxi_Rchi</span><span class="p">(</span><span class="n">material</span><span class="o">=</span><span class="s2">&quot;PLA&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that returns the behavior obtained through the optimization process for PLA</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    material : str</span>
+<span class="sd">        Name of the studied material.</span>
+<span class="sd">        For now &quot;PLA&quot; is the only option.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Rchi : sparse matrix of shape (6, 6)</span>
+<span class="sd">        Elemental material behavior matrix for deformation obtained through an optimization process.</span>
+<span class="sd">    Rchi : sparse matrix of shape (9, 9)</span>
+<span class="sd">        Elemental material behavior matrix for curvature obtained through an optimization process.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">material</span> <span class="o">==</span> <span class="s2">&quot;PLA&quot;</span> <span class="p">:</span>
+        <span class="n">Rxi</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">40.38459531</span><span class="p">,</span> <span class="mf">17.30755737</span><span class="p">,</span> <span class="mf">17.30755737</span><span class="p">,</span>  <span class="mf">0.</span> <span class="p">,</span>   <span class="mf">0.</span>  <span class="p">,</span>  <span class="mf">0.</span><span class="p">],</span> 
+                      <span class="p">[</span><span class="mf">17.30755737</span><span class="p">,</span> <span class="mf">40.38456331</span><span class="p">,</span> <span class="mf">17.30758124</span><span class="p">,</span>  <span class="mf">0.</span> <span class="p">,</span>   <span class="mf">0.</span>  <span class="p">,</span>  <span class="mf">0.</span><span class="p">],</span>
+                      <span class="p">[</span><span class="mf">17.30755737</span><span class="p">,</span> <span class="mf">17.30758124</span><span class="p">,</span> <span class="mf">40.38456331</span><span class="p">,</span>  <span class="mf">0.</span> <span class="p">,</span>   <span class="mf">0.</span>  <span class="p">,</span>  <span class="mf">0.</span><span class="p">],</span>
+                      <span class="p">[</span> <span class="mf">0.</span> <span class="p">,</span>    <span class="mf">0.</span>  <span class="p">,</span>  <span class="mf">0.</span>  <span class="p">,</span>   <span class="mf">46.15384384</span><span class="p">,</span> <span class="mf">0.</span>          <span class="p">,</span> <span class="mf">0.</span>   <span class="p">],</span>
+                      <span class="p">[</span> <span class="mf">0.</span> <span class="p">,</span>    <span class="mf">0.</span>  <span class="p">,</span>  <span class="mf">0.</span>  <span class="p">,</span>    <span class="mf">0.</span>        <span class="p">,</span> <span class="mf">46.15384384</span> <span class="p">,</span> <span class="mf">0.</span>   <span class="p">],</span>
+                      <span class="p">[</span> <span class="mf">0.</span> <span class="p">,</span>    <span class="mf">0.</span>  <span class="p">,</span>  <span class="mf">0.</span>  <span class="p">,</span>    <span class="mf">0.</span>        <span class="p">,</span> <span class="mf">0.</span>    <span class="p">,</span> <span class="mf">46.15384615</span><span class="p">]])</span>
+        
+    
+        <span class="n">Rchi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.02590884</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.00407345</span><span class="p">],</span>
+                          <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.00976768</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.00027718</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="p">],</span>
+                          <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.00939231</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.00115104</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.00921195</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="p">],</span>
+                          <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.02590884</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.00407345</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="p">],</span>
+                          <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.00115104</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.00939231</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.00921195</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="p">],</span>
+                          <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.00027718</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.00976768</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="p">],</span>
+                          <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.00921195</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.00921195</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.05593367</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="p">],</span>
+                          <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.00407345</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.07302198</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="p">],</span>
+                          <span class="p">[</span><span class="mf">0.00407345</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.07302198</span><span class="p">]])</span>
+    <span class="k">return</span> <span class="n">Rxi</span><span class="p">,</span> <span class="n">Rchi</span></div>
+
+
+<div class="viewcode-block" id="assembly_behavior">
+<a class="viewcode-back" href="../../modules.html#modules.behavior.assembly_behavior">[docs]</a>
+<span class="k">def</span> <span class="nf">assembly_behavior</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">W</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that assembles the elemental behaviour matrix into a global matrix (for the entire mesh).</span>
+<span class="sd">    It has been contracted with the derivation matrix B so that Sigma = K U</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    R : sparse matrix of shape (nInc, nInc)</span>
+<span class="sd">        Elemental material behavior matrix</span>
+<span class="sd">        nInc can be from different size : 6 for Rxi, 9 for Rchi, 3 for Rgamma</span>
+
+<span class="sd">    B : sparse matrix of shape (nInc*nQP, nNodeDOF)</span>
+<span class="sd">       Derivation matrix : first gradient for xi, second gradient for chi, third for gamma      </span>
+<span class="sd">        </span>
+<span class="sd">    W : sparse matrix of shape (nQP, nQP)</span>
+<span class="sd">        Integral weight matrix including local jacobian.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    K : sparse matrix of shape (nDOF, nDOF) nUncDOF = nUncNodes*nNodeDOF</span>
+<span class="sd">        Assembled behavior matrix.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span> <span class="o">@</span> <span class="n">B</span>  
+    <span class="k">return</span> <span class="n">K</span></div>
+
+
+<span class="c1">#%% Thermal</span>
+
+<div class="viewcode-block" id="dTfcn">
+<a class="viewcode-back" href="../../modules.html#modules.behavior.dTfcn">[docs]</a>
+<span class="k">def</span> <span class="nf">dTfcn</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dT</span><span class="p">,</span> <span class="n">loadType</span><span class="p">,</span> <span class="n">nLayers</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function which returns the thermal loading at the quadrature points in the alpha configuration.</span>
+<span class="sd">    This fonction is used to compute the entire structure undergoing a variation of temperature.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : array of size (nQP, nCoord)</span>
+<span class="sd">        Coordinates of each quadrature points in the global reference (t,n,b)..</span>
+<span class="sd">    dT : float</span>
+<span class="sd">       Temperature variation</span>
+<span class="sd">    loadType : str</span>
+<span class="sd">        Type of thermal loading. Options available are &quot;uniform&quot; and &quot;linear&quot;.</span>
+<span class="sd">    nLayers : int</span>
+<span class="sd">        Number of layers in the printed structure.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dTalpha array of size (nQP, nParticules)</span>
+<span class="sd">        Variation of temperature at each quadrature points for each particule.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">loadType</span> <span class="o">==</span> <span class="s2">&quot;uniform&quot;</span> <span class="p">:</span>
+        <span class="n">dTalpha</span> <span class="o">=</span> <span class="n">dT</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">4</span><span class="p">))</span>
+           
+    <span class="k">elif</span> <span class="n">loadType</span> <span class="o">==</span> <span class="s2">&quot;linear&quot;</span> <span class="p">:</span>
+        <span class="n">nNodes</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">nLayers</span><span class="p">)</span>
+        <span class="n">dTalpha</span> <span class="o">=</span> <span class="n">dT</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">nNodes</span><span class="p">)</span>
+        <span class="n">dTalpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">dTalpha</span><span class="p">,</span> <span class="n">nLayers</span><span class="p">)</span>
+        <span class="n">dTalpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">dTalpha</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span><span class="mi">4</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  
+        
+    <span class="k">elif</span> <span class="n">loadType</span> <span class="o">==</span> <span class="s2">&quot;random&quot;</span><span class="p">:</span>
+        <span class="n">nNodes</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">nLayers</span><span class="p">)</span>
+        <span class="n">dTalpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span> <span class="n">dT</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>  <span class="n">nNodes</span><span class="p">)</span>
+        <span class="n">dTalpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">dTalpha</span><span class="p">,</span> <span class="n">nLayers</span><span class="p">)</span>
+        <span class="n">dTalpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">dTalpha</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span><span class="mi">4</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        
+    <span class="k">elif</span> <span class="n">loadType</span> <span class="o">==</span> <span class="s2">&quot;quad&quot;</span><span class="p">:</span>
+        <span class="n">nNodes</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">nLayers</span><span class="p">)</span>
+        <span class="n">L</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">dTalpha</span> <span class="o">=</span> <span class="n">dT</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nNodes</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span><span class="p">[:</span><span class="n">nNodes</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="o">/</span><span class="n">L</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nNodes</span><span class="p">)</span> <span class="o">-</span> <span class="n">x</span><span class="p">[:</span><span class="n">nNodes</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="o">/</span><span class="n">L</span><span class="p">)</span>
+        <span class="c1"># dTalpha = dT*np.array([4*(x/L)*(1 - (x/L)) for x in np.arange(0,L, L/nNodes)])</span>
+        <span class="n">dTalpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">dTalpha</span><span class="p">,</span> <span class="n">nLayers</span><span class="p">)</span>
+        <span class="n">dTalpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">dTalpha</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span><span class="mi">4</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dTalpha</span></div>
+
+
+
+<div class="viewcode-block" id="thermal_eigenstrain">
+<a class="viewcode-back" href="../../modules.html#modules.behavior.thermal_eigenstrain">[docs]</a>
+<span class="k">def</span> <span class="nf">thermal_eigenstrain</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">dT</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that returns the thermal eigenstrain.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    alpha : float</span>
+<span class="sd">        Thermal expansion coefficient.</span>
+<span class="sd">    dT : array of size (nQP, 1)</span>
+<span class="sd">        Array of the variation of temperature at the quadrature points</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Eps_thermal : sparse matrix of size (nQP*6, 1) </span>
+<span class="sd">        Thermal eigenstrain.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">dT</span><span class="p">)</span> </div>
+
+
+<div class="viewcode-block" id="dryingEigenstrain">
+<a class="viewcode-back" href="../../modules.html#modules.behavior.dryingEigenstrain">[docs]</a>
+<span class="k">def</span> <span class="nf">dryingEigenstrain</span><span class="p">(</span><span class="n">dEps</span><span class="p">,</span> <span class="n">nQP</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that returns the drying eigenstrain.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dEps : array of size (nQP, 1)</span>
+<span class="sd">        Array of the variation of temperature at the quadrature points</span>
+<span class="sd">    nQP : int</span>
+<span class="sd">        Number of quadrature points.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Eps_drying : sparse matrix of size (nQP*6, 1) </span>
+<span class="sd">        Drying eigenstrain.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> </div>
+
+
+<span class="c1">#%% Energy</span>
+
+<div class="viewcode-block" id="energyDensity">
+<a class="viewcode-back" href="../../modules.html#modules.behavior.energyDensity">[docs]</a>
+<span class="k">def</span> <span class="nf">energyDensity</span><span class="p">(</span><span class="n">Eps</span><span class="p">,</span> <span class="n">Eps_th</span><span class="p">,</span> <span class="n">Sigma</span><span class="p">,</span> <span class="n">Rtot</span><span class="p">,</span> <span class="n">quadOrder</span><span class="p">,</span> <span class="n">nInc</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that computes the free energy density at each quadrature points</span>
+<span class="sd">    nInc gives the variables on which the energy is computed : 9 for first gradient components, 6 for second gradient components, 15 for both</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Eps : array of size (nInc*nQP, 1)</span>
+<span class="sd">        QW generalized strains.</span>
+<span class="sd">        k*nQP to (k+1)*nQP gives the k^th generalized strain at each quadrature point</span>
+<span class="sd">    Eps_th : array of size (nInc*nQP, 1)</span>
+<span class="sd">        Thermal eigenstrain.</span>
+<span class="sd">    Sigma : array of size (nInc*nQP, 1)</span>
+<span class="sd">        QW generalized stresses.</span>
+<span class="sd">        k*nQP to (k+1)*nQP gives the k^th generalized stress at each quadrature point</span>
+<span class="sd">    Rtot : sparse matrix of shape (nInc*nQP, nInc*nQP)</span>
+<span class="sd">        Derivation matrix : first gradient for xi, second gradient for chi, third for gamma.</span>
+<span class="sd">    quadOrder : int</span>
+<span class="sd">        Element quadrature order.</span>
+<span class="sd">    nInc : int</span>
+<span class="sd">        Number of QW degrees of freedom given for Eps.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    nrg : array of size (nQP,)</span>
+<span class="sd">        Linear elastic energy density expressed at the quadrature points.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nQP</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">Eps</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">nInc</span><span class="p">)</span>
+    <span class="n">nrg</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span> <span class="p">(</span><span class="n">Eps</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">nInc</span><span class="p">,</span> <span class="n">nQP</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="n">Sigma</span> <span class="o">-</span> <span class="n">Rtot</span> <span class="o">@</span> <span class="n">Eps_th</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">nInc</span><span class="p">,</span> <span class="n">nQP</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">nrg</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Rafaël Viano.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

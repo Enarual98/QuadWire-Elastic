@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>qw_structure &mdash; QuadWire 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=8d563738"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            QuadWire
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">modules package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">QuadWire</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">qw_structure</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for qw_structure</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">QuadWire function for calculating printed structures </span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1">#%% Imports</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy</span> <span class="k">as</span> <span class="nn">sp</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">from</span> <span class="nn">modules</span> <span class="kn">import</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">fem</span><span class="p">,</span> <span class="n">weld</span><span class="p">,</span> <span class="n">behavior</span><span class="p">,</span> <span class="n">plot</span>
+
+<span class="c1">#%% Function</span>
+
+<div class="viewcode-block" id="structure">
+<a class="viewcode-back" href="../qw_structure.html#qw_structure.structure">[docs]</a>
+<span class="k">def</span> <span class="nf">structure</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">Hn</span><span class="p">,</span> <span class="n">Hb</span><span class="p">,</span> <span class="n">meshType</span><span class="p">,</span> <span class="n">nNodes</span><span class="p">,</span> <span class="n">nLayers</span><span class="p">,</span> <span class="n">buildDirection</span><span class="p">,</span> <span class="n">dT</span><span class="p">,</span> <span class="n">loadType</span><span class="p">,</span> <span class="n">elemOrder</span><span class="p">,</span> <span class="n">quadOrder</span><span class="p">,</span> <span class="n">optimizedBehavior</span><span class="p">,</span> <span class="n">toPlot</span><span class="p">,</span> <span class="n">clrmap</span><span class="o">=</span><span class="s2">&quot;stt&quot;</span><span class="p">,</span> <span class="n">scfplot</span> <span class="o">=</span> <span class="mi">10</span> <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implementation of the mechanical calculation core of the QuadWire model for a pre-printed structure.</span>
+<span class="sd">    Wires are odered  :   TL -- TR</span>
+<span class="sd">                          |     |</span>
+<span class="sd">                         BL -- BR</span>
+<span class="sd">    Particules in the article are enumerated such as [TL,TR,BL,BR] = [3,1,4,2] </span>
+<span class="sd">    Primary variables: U_alpha = [[uTL_t,uTR_t,uBL_t,uBR_t],[uTL_n,uTR_n,uBL_n,uBR_n],[uTL_b,uTR_b,uBL_b,uBR_b]]</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    L : int</span>
+<span class="sd">         Length of the structure in tangential direction t.</span>
+<span class="sd">    Hn : TYPE</span>
+<span class="sd">        DESCRIPTION.</span>
+<span class="sd">    Hb : TYPE</span>
+<span class="sd">        DESCRIPTION.</span>
+<span class="sd">    meshType : str, optional</span>
+<span class="sd">        Geometry of the first layer. Options available are &quot;linear&quot;, &quot;circular&quot; or &quot;sinus&quot;. </span>
+<span class="sd">        The default is &quot;linear&quot;. Other options are &quot;circular&quot; or &quot;sinus&quot;.</span>
+<span class="sd">    nNodes : int</span>
+<span class="sd">        Number of nodes discretising the length L.</span>
+<span class="sd">    nLayers : int</span>
+<span class="sd">        Number of layers of the structure in the build dirction.</span>
+<span class="sd">    buildDirection : str</span>
+<span class="sd">        Build direction of the structure.</span>
+<span class="sd">        Options are : &quot;v&quot; for a wall structure and &quot;h&quot; for a carpet structure.</span>
+<span class="sd">    dT : float</span>
+<span class="sd">       Temperature variation</span>
+<span class="sd">    loadType : str</span>
+<span class="sd">        Type of thermal loading.</span>
+<span class="sd">        Options are &quot;uniform&quot;, &quot;linear&quot;, &quot;quad&quot; or &quot;random&quot;</span>
+<span class="sd">     elemOrder : int</span>
+<span class="sd">         Element order : number of nodes that forms an element </span>
+<span class="sd">         Options are 1 for two-nodes P1 element and 2 for three-nodes P2 element</span>
+<span class="sd">    quadOrder : int</span>
+<span class="sd">        Element quadrature order.</span>
+<span class="sd">    optimizedBehavior : bool</span>
+<span class="sd">        If True, the material behavior used is obtained through an optimisation procedure as described in the article.</span>
+<span class="sd">        If False, the material behavior used is obtained through an homogeneization procedure.</span>
+<span class="sd">    toPlot : bool</span>
+<span class="sd">        If True, several outputs are ploted.</span>
+<span class="sd">        If False, no outputs are ploted</span>
+<span class="sd">    clrmap : str, optional</span>
+<span class="sd">        Option for the plot function.</span>
+<span class="sd">        Choice of the quantity displayed in the colormap of the printed structure.</span>
+<span class="sd">        The default is &quot;stt&quot;. Options are &quot;stt&quot; for sigma_tt and &quot;nrg&quot; for the energy</span>
+<span class="sd">    scfplot : int, optional</span>
+<span class="sd">        Aspect ratio between the length and height (or width) of the section. </span>
+<span class="sd">        Used for display functions. </span>
+<span class="sd">        The default is 10.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    U : array of float of size (nCoord, nParticules, nNodesTOT) </span>
+<span class="sd">        Nodal displacement result.</span>
+<span class="sd">        Coordinates are ordered [t, n, b]</span>
+<span class="sd">        Particules are ordered [TL,TR,BL,BR] = [3,1,4,2] </span>
+<span class="sd">        Nodes are ordered by layers.</span>
+<span class="sd">    Eps : array of size (nInc*nQP, 1)</span>
+<span class="sd">        QW generalized strains.</span>
+<span class="sd">        k*nQP to (k+1)*nQP gives the k^th generalized strain at each quadrature point</span>
+<span class="sd">    Sigma : array of size (nInc*nQP, 1)</span>
+<span class="sd">        QW generalized stresses.</span>
+<span class="sd">        k*nQP to (k+1)*nQP gives the k^th generalized stress at each quadrature point</span>
+<span class="sd">    nrg : array of size (nElemsTOT,)</span>
+<span class="sd">        Linear elastic energy density of each elements.</span>
+<span class="sd">        Elements are ordered by layer.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1">### Discretization and meshing</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">Elems</span><span class="p">,</span> <span class="n">U0</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">meshing_first_layer</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">nNodes</span><span class="p">,</span> <span class="n">meshType</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> 
+    <span class="n">X</span><span class="p">,</span> <span class="n">Elems</span><span class="p">,</span> <span class="n">U0</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">mesh_structure</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Elems</span><span class="p">,</span> <span class="n">U0</span><span class="p">,</span> <span class="n">nLayers</span><span class="p">,</span> <span class="n">nNodes</span><span class="p">,</span> <span class="n">buildDirection</span><span class="p">,</span> <span class="n">Hb</span><span class="p">)</span>
+    <span class="n">weldDof</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">welding_conditions</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Elems</span><span class="p">,</span> <span class="n">U0</span><span class="p">,</span> <span class="n">nLayers</span><span class="p">,</span> <span class="n">nNodes</span><span class="p">,</span> <span class="n">buildDirection</span><span class="p">,</span> <span class="n">Hb</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">elemOrder</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">Elems</span><span class="p">,</span> <span class="n">U0</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">second_order_discretization</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Elems</span><span class="p">,</span> <span class="n">U0</span><span class="p">)</span>
+
+    <span class="n">Xunc</span><span class="p">,</span> <span class="n">uncElems</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">uncouple_nodes</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Elems</span><span class="p">)</span>
+
+
+    <span class="c1">### Prevision taille</span>
+    <span class="n">nElemsTOT</span> <span class="o">=</span> <span class="n">Elems</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">nUncNodes</span> <span class="o">=</span> <span class="n">Xunc</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">nNodesTOT</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">nParticules</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">nCoord</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">nNodeDOF</span> <span class="o">=</span> <span class="n">nCoord</span> <span class="o">*</span> <span class="n">nParticules</span> 
+
+    <span class="c1">### Usefull matrices</span>
+    <span class="c1">## Integration matrices</span>
+    <span class="n">xiQ</span><span class="p">,</span> <span class="n">wQ</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">element_quadrature</span><span class="p">(</span><span class="n">quadOrder</span><span class="p">)</span>
+    <span class="n">XIQ</span><span class="p">,</span> <span class="n">WQ</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">fullmesh_quadrature</span><span class="p">(</span><span class="n">quadOrder</span><span class="p">,</span> <span class="n">nElemsTOT</span><span class="p">)</span>
+    <span class="n">nQP</span> <span class="o">=</span> <span class="n">WQ</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">N</span><span class="p">,</span> <span class="n">Dxi</span><span class="p">,</span> <span class="n">Ds</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">O</span><span class="p">,</span> <span class="n">qp2elem</span><span class="p">,</span> <span class="n">elemQ</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">integration_matrices</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Elems</span><span class="p">,</span> <span class="n">elemOrder</span><span class="p">,</span> <span class="n">quadOrder</span><span class="p">)</span> 
+    <span class="c1">## Identity matrix (nQP, nQP)</span>
+    <span class="n">I_nqp</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">diags</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nQP</span><span class="p">))</span> 
+    <span class="c1">## Projection matrices</span>
+    <span class="n">T</span><span class="p">,</span> <span class="n">Tv</span><span class="p">,</span> <span class="n">Tc</span><span class="p">,</span> <span class="n">Ta</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">alpha2beta_matrices</span><span class="p">(</span><span class="n">Hn</span><span class="p">,</span> <span class="n">Hb</span><span class="p">,</span> <span class="n">nNodesTOT</span><span class="p">,</span> <span class="n">nUncNodes</span><span class="p">)</span>
+    <span class="n">t</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">P</span> <span class="o">=</span> <span class="n">fem</span><span class="o">.</span><span class="n">local2global_matrices</span><span class="p">(</span><span class="n">Xunc</span><span class="p">,</span> <span class="n">uncElems</span><span class="p">,</span> <span class="n">elemOrder</span><span class="p">)</span>
+    <span class="c1">## Welding matrices</span>
+    <span class="n">Sni</span><span class="p">,</span> <span class="n">Sn</span> <span class="o">=</span> <span class="n">weld</span><span class="o">.</span><span class="n">weldnode_matrices</span><span class="p">(</span><span class="n">Elems</span><span class="p">,</span> <span class="n">uncElems</span><span class="p">)</span>
+    <span class="n">Sw</span> <span class="o">=</span> <span class="n">weld</span><span class="o">.</span><span class="n">weldwire_matrix</span><span class="p">(</span><span class="n">nNodesTOT</span><span class="p">,</span> <span class="n">weldDof</span><span class="p">)</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">weld</span><span class="o">.</span><span class="n">bcs_matrix</span><span class="p">(</span><span class="n">U0</span><span class="p">,</span> <span class="n">Sw</span><span class="p">)</span>
+    <span class="c1"># matrice de passage noeud alpha -&gt; qp beta</span>
+    <span class="n">Assemble</span> <span class="o">=</span> <span class="n">Ta</span> <span class="o">@</span> <span class="n">P</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">Sn</span>  
+
+    <span class="c1">### Behavior</span>
+    <span class="c1">## PLA material parameters</span>
+    <span class="n">E</span> <span class="o">=</span> <span class="mf">3e3</span>  <span class="c1"># Young modulus /!\ in MPa !n</span>
+    <span class="n">nu</span> <span class="o">=</span> <span class="mf">0.3</span>  <span class="c1"># poisson ratio</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="mf">1.13e-5</span>  <span class="c1"># thermal expansion coefficient</span>
+    <span class="n">k0</span> <span class="o">=</span> <span class="n">E</span> <span class="o">/</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">nu</span><span class="p">))</span>  <span class="c1"># bulk modulus (K)</span>
+    <span class="n">mu</span> <span class="o">=</span> <span class="n">E</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">nu</span><span class="p">))</span>  <span class="c1"># shear modulus (G)</span>
+    <span class="n">lmbda</span> <span class="o">=</span> <span class="n">E</span> <span class="o">*</span> <span class="n">nu</span> <span class="o">/</span> <span class="p">((</span><span class="mi">1</span> <span class="o">+</span> <span class="n">nu</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">nu</span><span class="p">))</span>  <span class="c1"># k0-2/3*mu</span>
+    
+    <span class="c1">## Local behavior</span>
+    <span class="n">Btot</span> <span class="o">=</span> <span class="n">behavior</span><span class="o">.</span><span class="n">derivation_xi</span><span class="p">(</span><span class="n">Hn</span><span class="p">,</span> <span class="n">Hb</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">Ds</span><span class="p">)</span>
+    <span class="n">Ctot</span> <span class="o">=</span> <span class="n">behavior</span><span class="o">.</span><span class="n">derivation_chi</span><span class="p">(</span><span class="n">Hn</span><span class="p">,</span> <span class="n">Hb</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">Ds</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">optimizedBehavior</span> <span class="p">:</span>
+        <span class="n">Rxi</span><span class="p">,</span> <span class="n">Rchi</span> <span class="o">=</span> <span class="n">behavior</span><span class="o">.</span><span class="n">optimization_Rxi_Rchi</span><span class="p">()</span>
+    <span class="k">else</span> <span class="p">:</span> 
+        <span class="n">Rxi</span> <span class="o">=</span> <span class="n">behavior</span><span class="o">.</span><span class="n">homogeneization_Rxi</span><span class="p">(</span><span class="n">Hn</span><span class="p">,</span> <span class="n">Hb</span><span class="p">,</span> <span class="n">lmbda</span><span class="p">,</span> <span class="n">mu</span><span class="p">)</span>
+        <span class="n">Rchi</span> <span class="o">=</span> <span class="n">behavior</span><span class="o">.</span><span class="n">homogenization_Rchi</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">Hn</span><span class="p">,</span> <span class="n">Hb</span><span class="p">,</span> <span class="n">lmbda</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">nNodes</span><span class="p">)</span>
+    
+    <span class="c1">## Local stiffness matrix</span>
+    <span class="n">Kxi</span> <span class="o">=</span> <span class="n">behavior</span><span class="o">.</span><span class="n">assembly_behavior</span><span class="p">(</span><span class="n">Rxi</span><span class="p">,</span> <span class="n">Btot</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+    <span class="n">Kchi</span> <span class="o">=</span> <span class="n">behavior</span><span class="o">.</span><span class="n">assembly_behavior</span><span class="p">(</span><span class="n">Rchi</span><span class="p">,</span> <span class="n">Ctot</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="n">Kxi</span> <span class="o">+</span> <span class="n">Kchi</span>
+
+    <span class="c1">### Thermal eigenstrain</span>
+    <span class="n">dTalpha</span> <span class="o">=</span> <span class="n">behavior</span><span class="o">.</span><span class="n">dTfcn</span><span class="p">(</span><span class="n">N</span> <span class="o">@</span> <span class="n">Xunc</span><span class="p">,</span> <span class="n">dT</span><span class="p">,</span> <span class="n">loadType</span><span class="p">,</span> <span class="n">nLayers</span><span class="p">)</span>
+    <span class="n">dTbeta</span> <span class="o">=</span> <span class="n">dTalpha</span> <span class="o">@</span> <span class="n">T</span>
+    <span class="n">dTmoy</span> <span class="o">=</span> <span class="n">dTbeta</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">][:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+
+    <span class="c1">### Assembly of K.u = f</span>
+    <span class="c1"># hard copy is needed to keep the u0 vector unmodified</span>
+    <span class="n">u00</span> <span class="o">=</span> <span class="n">U0</span><span class="o">.</span><span class="n">flatten</span><span class="p">()[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  
+    <span class="n">freeDOF</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">U0</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>  <span class="c1"># True/False table storing remaining DOF</span>
+    <span class="n">u00</span><span class="p">[</span><span class="n">freeDOF</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># cull NaNs</span>
+
+    <span class="c1">## Construction of the global stiffness matrix</span>
+    <span class="c1"># K = Ta.T @ K @ Ta # Projection alpha -&gt; beta puis beta -&gt; alpha</span>
+    <span class="c1"># K = P @ K @ P.T    # Projection global -&gt; local puis local -&gt; global</span>
+    <span class="c1"># K = Sn.T @ K @ Sn  # Welding nodes</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="n">Assemble</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">K</span> <span class="o">@</span> <span class="n">Assemble</span>
+    <span class="n">yKy</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">K</span> <span class="o">@</span> <span class="n">Y</span>  <span class="c1"># Deleting non usefull dof</span>
+
+    <span class="c1">## Construction of the force vector</span>
+    <span class="c1"># Thermal eigenstrain</span>
+    <span class="n">Eps_thermal</span> <span class="o">=</span> <span class="n">behavior</span><span class="o">.</span><span class="n">thermal_eigenstrain</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">dTmoy</span><span class="p">)</span>
+    <span class="n">f_thermal</span> <span class="o">=</span> <span class="n">Btot</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">Rxi</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span> <span class="o">@</span> <span class="n">Eps_thermal</span>
+    <span class="c1"># Assembly of the force vector</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nUncNodes</span> <span class="o">*</span> <span class="n">nNodeDOF</span><span class="p">)</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">f_thermal</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">Assemble</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">f</span>
+    <span class="n">fbc</span> <span class="o">=</span> <span class="n">f</span> <span class="o">-</span> <span class="n">K</span> <span class="o">@</span> <span class="n">u00</span> 
+    <span class="n">yfbc</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">fbc</span>  <span class="c1"># Deleting non usefull dof</span>
+
+
+    <span class="c1">### Solve K.u = f</span>
+    <span class="n">us</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">spsolve</span><span class="p">(</span><span class="n">yKy</span><span class="p">,</span> <span class="n">yfbc</span><span class="p">)</span>
+
+    <span class="c1">### Reconstruction of the problem&#39;s unknowns</span>
+    <span class="c1">## Displacement field</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">Y</span> <span class="o">@</span> <span class="n">us</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+    <span class="n">U</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">nNodesTOT</span><span class="p">))</span>
+    <span class="c1"># nodal displacement </span>
+    <span class="n">uUncouple</span> <span class="o">=</span> <span class="n">Assemble</span> <span class="o">@</span> <span class="n">u</span>  <span class="c1"># beta configuration</span>
+    <span class="n">uUncouple_alpha</span> <span class="o">=</span>  <span class="n">P</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">Sn</span> <span class="o">@</span> <span class="n">u</span> <span class="c1"># alpha configuration</span>
+
+    <span class="c1">## Strains</span>
+    <span class="c1"># Initialization</span>
+    <span class="n">Eps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(((</span><span class="mi">6</span> <span class="o">+</span> <span class="mi">9</span><span class="p">)</span> <span class="o">*</span> <span class="n">nQP</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="c1"># (nInc, nQP) sigma_xi = Rxi @ (Eps_xi - Eps_thermique)</span>
+    <span class="n">Eps_xi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">6</span><span class="o">*</span><span class="n">nQP</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">Eps_chi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">9</span><span class="o">*</span><span class="n">nQP</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="c1"># Update</span>
+    <span class="n">Eps</span> <span class="o">+=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">Btot</span><span class="p">,</span> <span class="n">Ctot</span><span class="p">))</span> <span class="o">@</span> <span class="n">uUncouple</span>  
+    <span class="n">Eps_xi</span> <span class="o">+=</span> <span class="n">Btot</span> <span class="o">@</span> <span class="n">uUncouple</span>
+    <span class="n">Eps_chi</span> <span class="o">+=</span> <span class="n">Ctot</span> <span class="o">@</span> <span class="n">uUncouple</span>
+    
+    
+    <span class="c1">## Stresses</span>
+    <span class="c1"># Initialization</span>
+    <span class="n">Sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(((</span><span class="mi">6</span> <span class="o">+</span> <span class="mi">9</span><span class="p">)</span> <span class="o">*</span> <span class="n">nQP</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>  <span class="c1"># 6 strain components and 9 curvature components</span>
+    <span class="n">Sigma_s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">6</span><span class="o">*</span><span class="n">nQP</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">Sigma_m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">9</span><span class="o">*</span><span class="n">nQP</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="c1"># Rtot : Mauvais nom</span>
+    <span class="n">Rtot</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">block_diag</span><span class="p">((</span><span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">Rxi</span><span class="p">,</span> <span class="n">I_nqp</span><span class="p">),</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">Rchi</span><span class="p">,</span> <span class="n">I_nqp</span><span class="p">)))</span>
+    <span class="c1"># Update</span>
+    <span class="n">Sigma</span> <span class="o">+=</span>  <span class="n">Rtot</span> <span class="o">@</span> <span class="n">Eps</span>
+    <span class="n">Sigma</span> <span class="o">-=</span>  <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">Rxi</span><span class="p">,</span> <span class="n">I_nqp</span><span class="p">)</span> <span class="o">@</span> <span class="n">Eps_thermal</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">((</span><span class="mi">9</span> <span class="o">*</span> <span class="n">nQP</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="p">))</span>
+    <span class="n">Sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Sigma</span><span class="p">)</span> <span class="c1">## changement de type de variable donc il faut la repasser en ndarray wtf ?</span>
+
+    <span class="n">Sigma_s</span> <span class="o">+=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">Rxi</span><span class="p">,</span> <span class="n">I_nqp</span><span class="p">)</span> <span class="o">@</span> <span class="p">(</span><span class="n">Eps_xi</span> <span class="o">-</span> <span class="n">Eps_thermal</span><span class="p">)</span>
+    <span class="n">Sigma_m</span> <span class="o">+=</span>  <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">Rchi</span><span class="p">,</span> <span class="n">I_nqp</span><span class="p">)</span> <span class="o">@</span> <span class="n">Eps_chi</span>
+
+    <span class="c1"># Sigmatt elem</span>
+    <span class="n">sigmatt_elem</span> <span class="o">=</span> <span class="n">qp2elem</span> <span class="o">@</span> <span class="n">Sigma</span><span class="p">[:</span><span class="n">nQP</span><span class="p">]</span>
+
+    <span class="c1">### Energy</span>
+    <span class="n">Eps_th</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">Eps_thermal</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">((</span><span class="mi">9</span><span class="o">*</span><span class="n">nQP</span><span class="p">,</span> <span class="mi">1</span><span class="p">))))</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span>
+
+    <span class="n">qpEnergyDensity</span> <span class="o">=</span> <span class="n">behavior</span><span class="o">.</span><span class="n">energyDensity</span><span class="p">(</span><span class="n">Eps</span><span class="p">,</span> <span class="n">Eps_th</span><span class="p">,</span> <span class="n">Sigma</span><span class="p">,</span> <span class="n">Rtot</span><span class="p">,</span> <span class="n">quadOrder</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
+    <span class="n">nrg</span> <span class="o">=</span> <span class="n">qp2elem</span> <span class="o">@</span> <span class="n">qpEnergyDensity</span>
+    
+    <span class="c1">### Plot</span>
+    
+    <span class="k">if</span> <span class="n">toPlot</span> <span class="p">:</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">(</span><span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">,</span> <span class="n">proj_type</span><span class="o">=</span><span class="s1">&#39;ortho&#39;</span><span class="p">)</span>
+        <span class="c1"># ax.set_axis_off()</span>
+
+        <span class="c1"># mean basis vectors on nodes</span>
+        <span class="n">Me</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">Elems</span><span class="o">.</span><span class="n">size</span><span class="p">),</span> <span class="p">(</span><span class="n">Elems</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Elems</span><span class="o">.</span><span class="n">size</span><span class="p">))))</span>
+        <span class="n">nm</span> <span class="o">=</span> <span class="n">Me</span> <span class="o">@</span> <span class="n">n</span><span class="p">;</span>
+        <span class="n">nm</span> <span class="o">=</span> <span class="n">nm</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">nm</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="n">bm</span> <span class="o">=</span> <span class="n">Me</span> <span class="o">@</span> <span class="n">b</span><span class="p">;</span>
+        <span class="n">bm</span> <span class="o">=</span> <span class="n">bm</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">bm</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+
+        <span class="c1"># undeformed shape</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span>
+                <span class="n">Hn</span> <span class="o">*</span> <span class="n">nm</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]])</span> <span class="o">+</span> <span class="n">Hb</span> <span class="o">*</span> <span class="n">bm</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]]]))</span>
+        <span class="c1"># plotMesh(x,Elems,color=&#39;none&#39;,edgecolor=&#39;gray&#39;)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_box_aspect</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ptp</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">ptp</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">scfplot</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ptp</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span><span class="o">*</span><span class="n">scfplot</span><span class="p">))</span>
+
+        <span class="c1"># deformed shape</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="mf">.25</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">([</span><span class="n">Hn</span><span class="p">,</span> <span class="n">Hb</span><span class="p">])</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">U</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">uplot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">uplot</span>
+        
+        <span class="k">if</span> <span class="n">clrmap</span><span class="o">==</span><span class="s2">&quot;stt&quot;</span><span class="p">:</span>
+            <span class="n">clr</span> <span class="o">=</span> <span class="n">sigmatt_elem</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># sigmatt = sp.sparse.linalg.lsqr(N @ Sni, Sigma[0:nQP])[0][:, None]</span>
+            <span class="c1"># clr = sigmatt[:, None] * [[1, 1, 1, 1]]</span>
+        <span class="k">elif</span> <span class="n">clrmap</span><span class="o">==</span><span class="s2">&quot;nrg&quot;</span> <span class="p">:</span>
+            <span class="n">clr</span> <span class="o">=</span> <span class="n">nrg</span>
+        <span class="c1"># clr = sigmatt_elem[:,0]</span>
+        <span class="c1"># srf.set_array(np.mean(clr.flatten()[tri], axis=1))</span>
+        <span class="c1"># srf.set_clim(np.nanmin(clr), np.nanmax(clr))  </span>
+
+        <span class="n">srf</span><span class="p">,</span> <span class="n">tri</span> <span class="o">=</span> <span class="n">plot</span><span class="o">.</span><span class="n">plotMesh</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">Elems</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">clrfun</span><span class="o">=</span><span class="n">clr</span>  <span class="p">,</span> <span class="n">outer</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">colorbar</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">srf</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.15</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">clrmap</span><span class="o">==</span><span class="s2">&quot;stt&quot;</span><span class="p">:</span>
+            <span class="n">colorbar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s1">&#39;$\Sigma_</span><span class="si">{tt}</span><span class="s1">$ [N]&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">clrmap</span><span class="o">==</span><span class="s2">&quot;nrg&quot;</span> <span class="p">:</span>
+            <span class="n">colorbar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s2">&quot;$\psi$ [J.mm$^{-1}$]&quot;</span><span class="p">)</span>
+
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Axe t&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Axe n&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s1">&#39;Axe b&#39;</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    
+    <span class="k">return</span> <span class="n">U</span><span class="p">,</span> <span class="n">Eps</span><span class="p">,</span> <span class="n">Sigma</span><span class="p">,</span> <span class="n">nrg</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Rafaël Viano.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

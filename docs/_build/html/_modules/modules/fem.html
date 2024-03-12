@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>modules.fem &mdash; QuadWire 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=8d563738"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            QuadWire
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">modules package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">QuadWire</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">modules.fem</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for modules.fem</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Module defining the finite elements components and the matrices of transitions between different function evaluation locations (node, quadrature points) and coordinate systems (primary, secondary) of the QuadWire program &quot;&quot;&quot;</span>
+
+<span class="c1">#%% import packages</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy</span> <span class="k">as</span> <span class="nn">sp</span>
+<span class="kn">from</span> <span class="nn">modules.mesh</span> <span class="kn">import</span> <span class="n">uncouple_nodes</span>
+
+<span class="c1">#%% Finite Element Definition</span>
+    
+<div class="viewcode-block" id="shape_function">
+<a class="viewcode-back" href="../../modules.html#modules.fem.shape_function">[docs]</a>
+<span class="k">def</span> <span class="nf">shape_function</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">elemOrder</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that returns the shape fonction (or interpolation fonction)</span>
+<span class="sd">    f(Xqp) = N.f(Xunc)</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xi : array of size ((nNodes-1)*nLayers, 1)</span>
+<span class="sd">        Coordinates of the quadrature points.</span>
+<span class="sd">    elemOrder : int</span>
+<span class="sd">        Element order : number of nodes that forms an element </span>
+<span class="sd">        Options are 1 for two-nodes P1 element and 2 for three-nodes P2 element</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    array of size (nQP, nNodesByElem, 1)</span>
+<span class="sd">        Shape function.</span>
+<span class="sd">    </span>
+<span class="sd">    NB : nQP = quadOrder*(nNodes-1)*nLayers</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+       
+    <span class="k">if</span> <span class="n">elemOrder</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="mi">1</span> <span class="o">-</span> <span class="n">xi</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">xi</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]],</span> <span class="mi">1</span><span class="p">)</span>  
+    
+    <span class="k">elif</span> <span class="n">elemOrder</span> <span class="o">==</span><span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">xi</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">xi</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span> <span class="o">*</span> <span class="p">(</span><span class="n">xi</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">-</span> <span class="n">xi</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">),</span>
+             <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">xi</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">xi</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="shape_function_derivative">
+<a class="viewcode-back" href="../../modules.html#modules.fem.shape_function_derivative">[docs]</a>
+<span class="k">def</span> <span class="nf">shape_function_derivative</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">elemOrder</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Derivation of the shape function d_Shape/d_xi in the reference coordinates </span>
+<span class="sd">    df_dxi(Xqp) = Dxi.f(Xunc)</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xi : array of size ((nNodes-1)*nLayers, 1)</span>
+<span class="sd">        Coordinates of the quadrature points.</span>
+<span class="sd">    elemOrder : int, optional</span>
+<span class="sd">        Element order : number of nodes that forms an element </span>
+<span class="sd">        Options are 1 for two-nodes P1 element and 2 for three-nodes P2 element</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    array of size (nQP, nNodesByElem)</span>
+<span class="sd">        Derivation of the shape function.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="n">elemOrder</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">xi</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">xi</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="mi">1</span><span class="p">))],</span> <span class="mi">1</span><span class="p">)</span>
+    
+    <span class="k">elif</span> <span class="n">elemOrder</span> <span class="o">==</span><span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="o">-</span><span class="mi">3</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">xi</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="mi">4</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">xi</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]),</span> <span class="o">-</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">xi</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]],</span> <span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="element_quadrature">
+<a class="viewcode-back" href="../../modules.html#modules.fem.element_quadrature">[docs]</a>
+<span class="k">def</span> <span class="nf">element_quadrature</span><span class="p">(</span><span class="n">quadOrder</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that returns an element quadrature</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    quadOrder : int</span>
+<span class="sd">        Element quadrature order.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    xiQ : array of size (quadOrder, )</span>
+<span class="sd">        Coordinates of the quadrature point reference coordinates.</span>
+<span class="sd">    wQ : array of size (quadOrder, )</span>
+<span class="sd">        Quadrature weights.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">quadOrder</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">xiQ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">])</span>
+        <span class="n">wQ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="n">quadOrder</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">xiQ</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">wQ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">.5</span><span class="p">,</span> <span class="mf">.5</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="n">quadOrder</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">xiQ</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">.6</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">wQ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span> <span class="o">/</span> <span class="mi">18</span>
+    <span class="k">return</span> <span class="n">xiQ</span><span class="p">,</span> <span class="n">wQ</span></div>
+
+
+<div class="viewcode-block" id="fullmesh_quadrature">
+<a class="viewcode-back" href="../../modules.html#modules.fem.fullmesh_quadrature">[docs]</a>
+<span class="k">def</span> <span class="nf">fullmesh_quadrature</span><span class="p">(</span><span class="n">quadOrder</span><span class="p">,</span> <span class="n">nElemsTot</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that returns the full mesh quadrature</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    quadOrder : int</span>
+<span class="sd">        Element quadrature order.</span>
+<span class="sd">    nElemsTot : int</span>
+<span class="sd">        Numbrer of element in the whole structure.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    XIQ : array of size (quadOrder*(nNodes-1)*nLayers, 1) or (nQP, 1)</span>
+<span class="sd">        Coordinates of the quadrature points.</span>
+<span class="sd">    WQ : array of size (quadOrder*(nNodes-1)*nLayers, 1) or (nQP, 1)</span>
+<span class="sd">        Weight of the quadrature points.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Single element quadrature</span>
+    <span class="n">xiQ</span><span class="p">,</span> <span class="n">wQ</span> <span class="o">=</span> <span class="n">element_quadrature</span><span class="p">(</span><span class="n">quadOrder</span><span class="p">)</span>
+    <span class="c1"># Full mesh quadrature</span>
+    <span class="n">XIQ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">xiQ</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="p">(</span><span class="n">nElemsTot</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>  <span class="c1"># points</span>
+    <span class="n">WQ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">wQ</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="p">(</span><span class="n">nElemsTot</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>  <span class="c1"># weights</span>
+    <span class="k">return</span> <span class="n">XIQ</span><span class="p">,</span> <span class="n">WQ</span></div>
+
+
+<div class="viewcode-block" id="integration_matrices">
+<a class="viewcode-back" href="../../modules.html#modules.fem.integration_matrices">[docs]</a>
+<span class="k">def</span> <span class="nf">integration_matrices</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Elems</span><span class="p">,</span> <span class="n">elemOrder</span><span class="p">,</span> <span class="n">quadOrder</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return some usefull sparse matrix that will be use in the FEM solver.</span>
+<span class="sd">    Reminder : nQP = quadOrder*(nNodes-1)*nLayers = quadOrder * nElemTot</span>
+<span class="sd">               nUncNodes = 2*(nNodes -2)*nLayers + nLayers*2</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : array of size (nNodes*nLayers, nCoord)</span>
+<span class="sd">        Coordinates of each nodes in the global reference (t,n,b).</span>
+<span class="sd">    Elems : array of size ((nNodes - 1)*nLayers, elemOrder +1 ) or (nElemTot, elemOrder +1)</span>
+<span class="sd">        Index of the pair of nodes forming an element.</span>
+<span class="sd">    elemOrder : int</span>
+<span class="sd">        Element order : number of nodes that forms an element </span>
+<span class="sd">        Options are 1 for two-nodes P1 element and 2 for three-nodes P2 element</span>
+<span class="sd">    quadOrder : int</span>
+<span class="sd">        Element quadrature order.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    N : sparse matrix of shape (nQP, nUncNodes) </span>
+<span class="sd">        Function of interpolation at the quadrature points : f(Xqp) = N.f(Xunc)</span>
+<span class="sd">    Dxi : sparse matrix of shape (nQP, nUncNodes)</span>
+<span class="sd">        Function of derivation in REFERENCE coordinates : df_dxi(Xqp) = Dxi.f(Xunc) .</span>
+<span class="sd">    Ds : sparse matrix of shape (nQP, nUncNodes)</span>
+<span class="sd">        Function derivation in LENGTH coordinates : df_ds(Xqp) = Ds.f(Xunc).</span>
+<span class="sd">    J : array of size (nQP,)</span>
+<span class="sd">        Jacobian = norm(dX_dxi)</span>
+<span class="sd">    W : sparse matrix of shape (nQP, nQP)</span>
+<span class="sd">        Integral weight matrix including local jacobian.</span>
+<span class="sd">    O : sparse matrix of shape (nQP, nUncNodes)</span>
+<span class="sd">        Null matrix. </span>
+<span class="sd">    qp2elem : sparse matrix of shape (nElemTOT, nQP)</span>
+<span class="sd">        Transition matrix between the quadrature points and the elements</span>
+<span class="sd">        f(elem) = qp2elem @ f(x_qp) </span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nElems</span> <span class="o">=</span> <span class="n">Elems</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">nNodesByElem</span> <span class="o">=</span> <span class="n">Elems</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    
+    <span class="n">xiQ</span><span class="p">,</span> <span class="n">WQ</span> <span class="o">=</span> <span class="n">element_quadrature</span><span class="p">(</span><span class="n">quadOrder</span><span class="p">)</span>
+    <span class="n">XIQ</span><span class="p">,</span> <span class="n">WQ</span> <span class="o">=</span> <span class="n">fullmesh_quadrature</span><span class="p">(</span><span class="n">quadOrder</span><span class="p">,</span> <span class="n">nElems</span><span class="p">)</span>
+    <span class="n">nQP</span> <span class="o">=</span> <span class="n">WQ</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    
+    <span class="c1"># Uncoupled coordonnates</span>
+    <span class="n">Xunc</span><span class="p">,</span> <span class="n">uncElems</span> <span class="o">=</span> <span class="n">uncouple_nodes</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Elems</span><span class="p">)</span>
+    
+    <span class="c1"># Quadrature points corresponding element index</span>
+    <span class="n">elemQ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nElems</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">xiQ</span><span class="p">))</span>  
+    
+    <span class="c1"># QP to Element transfer matrix</span>
+    <span class="n">qp2elem</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">((</span><span class="n">WQ</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="p">(</span><span class="n">elemQ</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nQP</span><span class="p">)</span> <span class="p">)))</span>
+
+    <span class="c1"># Sparse matrix indices</span>
+    <span class="n">ii</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nQP</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nNodesByElem</span><span class="p">))</span>  <span class="c1"># row indices</span>
+    <span class="n">jj</span> <span class="o">=</span> <span class="n">uncElems</span><span class="p">[</span><span class="n">elemQ</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># column indices</span>
+    
+    <span class="c1"># Function interpolation -- f(Xqp) = N.f(Xunc)</span>
+    <span class="n">nn</span> <span class="o">=</span> <span class="n">shape_function</span><span class="p">(</span><span class="n">XIQ</span><span class="p">,</span> <span class="n">elemOrder</span><span class="p">)</span>  <span class="c1"># fill values (nElems,nUncNodes)</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">((</span><span class="n">nn</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="p">(</span><span class="n">ii</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">jj</span><span class="o">.</span><span class="n">flatten</span><span class="p">())))</span>
+    
+    <span class="c1"># Function derivation in REFERENCE coordinates -- df_dxi(Xqp) = Dxi.f(Xunc)</span>
+    <span class="n">gg</span> <span class="o">=</span> <span class="n">shape_function_derivative</span><span class="p">(</span><span class="n">XIQ</span><span class="p">,</span> <span class="n">elemOrder</span><span class="p">)</span>  <span class="c1"># fill values (nQP,nNodesByElem)</span>
+    <span class="n">Dxi</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">((</span><span class="n">gg</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="p">(</span><span class="n">ii</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">jj</span><span class="o">.</span><span class="n">flatten</span><span class="p">())))</span>  <span class="c1"># ref derivation matrix (nQP,nUncNodes)</span>
+    
+    <span class="c1"># Function derivation in LENGTH coordinates -- df_ds(Xqp) = Ds.f(Xunc)</span>
+    <span class="n">dX_dxi</span> <span class="o">=</span> <span class="n">Dxi</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Xunc</span><span class="p">)</span>  <span class="c1"># ref coordinate derivative (nQP,nCoord)</span>
+    <span class="n">J</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dX_dxi</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>  <span class="c1"># Jacobian = norm(dX_dxi)  (nQP,)</span>
+    <span class="n">Ds</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">diags</span><span class="p">(</span><span class="n">J</span> <span class="o">**</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Dxi</span><span class="p">)</span>  <span class="c1"># length derivation matrix (nQP,nUncNodes)</span>
+    
+    <span class="c1"># Integral weight matrix including local jacobian</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">diags</span><span class="p">((</span><span class="n">WQ</span> <span class="o">*</span> <span class="n">J</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>  <span class="c1"># (nQP,nQP)</span>
+    
+    <span class="c1"># Null matrix</span>
+    <span class="n">O</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>  <span class="c1"># (nQP,nUncNodes)</span>
+    
+    <span class="k">return</span> <span class="n">N</span><span class="p">,</span> <span class="n">Dxi</span><span class="p">,</span> <span class="n">Ds</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">O</span><span class="p">,</span> <span class="n">qp2elem</span><span class="p">,</span> <span class="n">elemQ</span></div>
+
+
+<div class="viewcode-block" id="alpha2beta_matrices">
+<a class="viewcode-back" href="../../modules.html#modules.fem.alpha2beta_matrices">[docs]</a>
+<span class="k">def</span> <span class="nf">alpha2beta_matrices</span><span class="p">(</span><span class="n">Hn</span><span class="p">,</span> <span class="n">Hb</span><span class="p">,</span> <span class="n">nNodesTot</span><span class="p">,</span> <span class="n">nUncNodes</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that returns the matrices that enables the primary to secondary transfer for vectors variables </span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Hn : int</span>
+<span class="sd">        Characteristic length of the cord section in n direction.</span>
+<span class="sd">    Hb : int</span>
+<span class="sd">        Characteristic length of the cord section in b direction.</span>
+<span class="sd">    nNodesTot : int</span>
+<span class="sd">        Number of coupled nodes in the mesh</span>
+<span class="sd">    nUncNodes : int</span>
+<span class="sd">        Number uncoupled nodes in the mesh.</span>
+<span class="sd">    TDim : bool </span>
+<span class="sd">        Bool that indicates whether or not the dimensions have been taken into account in T, the alpha to beta transition matrix</span>
+<span class="sd">        False for the optimization induced behavior - T without Hn Hb</span>
+<span class="sd">        True for the homogeneization induced behavior - T with Hn Hb</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Tv : sparse matrix of shape (nNodeDOF, nNodeDOF) = (12, 12)</span>
+<span class="sd">        Transition matrix between the alpha and beta coordinate systems for vectorized variables </span>
+<span class="sd">        u_beta = vec(U_beta) = Tv.vec(u_alpha) </span>
+<span class="sd">    </span>
+<span class="sd">    Tc : sparse matrix of shape (nNodeDOF*nNodesTot, nNodeDOF*nNodesTot)</span>
+<span class="sd">        Transition matrix between the alpha and beta coordinate systems for coupled vecotrs </span>
+<span class="sd">    </span>
+<span class="sd">    Ta : sparse matrix of shape (nNodeDOF*nUncNodes, nNodeDOF*nUncNodes)</span>
+<span class="sd">        Transition matrix between the alpha and beta coordinate systems for uncoupled vectors</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># Primary-&gt;Secondary transfer f_beta = f_alpha*T scalar</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">4</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">2</span><span class="p">],[</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="o">-</span><span class="mi">4</span><span class="p">]])</span><span class="o">.</span><span class="n">T</span>
+    <span class="c1"># with vectorized variables: u_beta = vec(U_beta) = Tv.vec(u_alpha) with Tv vector </span>
+    <span class="n">Tv</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">T</span><span class="p">)</span>
+    <span class="c1"># with all coupled Nodes</span>
+    <span class="n">Tc</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">Tv</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">nNodesTot</span><span class="p">))</span>
+    <span class="c1"># with all uncoupled Nodes</span>
+    <span class="n">Ta</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">Tv</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">nUncNodes</span><span class="p">))</span> <span class="c1">#nUncNodes</span>
+    <span class="c1"># Ta = sp.sparse.kron(sp.sparse.eye(nUncNodes), Tv) #nUncNodes</span>
+
+    <span class="k">return</span> <span class="n">T</span><span class="p">,</span> <span class="n">Tv</span><span class="p">,</span> <span class="n">Tc</span><span class="p">,</span> <span class="n">Ta</span></div>
+
+
+<div class="viewcode-block" id="local2global_matrices">
+<a class="viewcode-back" href="../../modules.html#modules.fem.local2global_matrices">[docs]</a>
+<span class="k">def</span> <span class="nf">local2global_matrices</span><span class="p">(</span><span class="n">Xunc</span><span class="p">,</span> <span class="n">uncElems</span><span class="p">,</span> <span class="n">elemOrder</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function which returns the evaluation of the base vectors at each decoupled node</span>
+<span class="sd">    and the matrix for passing from local to global coordinates</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Xunc : array of size (nUncNodes, nCoord)</span>
+<span class="sd">        Coordinates of each uncoupled nodes in the global reference (t,n,b).</span>
+<span class="sd">    uncElems : array of size (nElemTot, elemOrder + 1)</span>
+<span class="sd">        Index of the pair of nodes forming an uncoupled element.</span>
+<span class="sd">    elemOrder : int, optional</span>
+<span class="sd">        Element order in the FEM discretization. </span>
+<span class="sd">        Options are 1 for two-nodes P1 element and 2 for three-nodes P2 element</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    t : array of size (nUncNodes, nCoord)</span>
+<span class="sd">        Coordinates of the local tangent vector evaluated at each uncoupled node.</span>
+<span class="sd">    n : array of size (nUncNodes, nCoord)</span>
+<span class="sd">        Coordinates of the local horizontal normal vector evaluated at each uncoupled node.</span>
+<span class="sd">    b : array of size (nUncNodes, nCoord)</span>
+<span class="sd">        Coordinates of the local vertical normal vector evaluated at each uncoupled node.</span>
+<span class="sd">    P : sparse matrix of shape (nNodeDOF*nUncNodes, nNodeDOF*nUncNodes) = (nDOF, nDOF)</span>
+<span class="sd">        Matrix that transfers variables expressed in a local coordinates to global coordinates</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+        
+    <span class="n">nElems</span> <span class="o">=</span> <span class="n">uncElems</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">nNodesByElem</span> <span class="o">=</span> <span class="n">uncElems</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">nUncNodes</span> <span class="o">=</span> <span class="n">nElems</span> <span class="o">*</span> <span class="n">nNodesByElem</span>
+    
+    <span class="c1"># node reference coordinates</span>
+    <span class="k">if</span> <span class="n">elemOrder</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">:</span>
+        <span class="n">xiN</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>  
+    <span class="k">elif</span> <span class="n">elemOrder</span> <span class="o">==</span> <span class="mi">2</span> <span class="p">:</span> 
+        <span class="n">xiN</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mf">.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+    
+    <span class="c1"># Coordinate derivatives at element nodes reference coordinates</span>
+    <span class="n">XIN</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">xiN</span><span class="p">,</span> <span class="p">(</span><span class="n">nElems</span><span class="p">,))</span>
+    <span class="n">elemN</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nElems</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">xiN</span><span class="p">))</span>
+    <span class="n">ii</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nUncNodes</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nNodesByElem</span><span class="p">))</span>  <span class="c1"># row indices</span>
+    <span class="n">jj</span> <span class="o">=</span> <span class="n">uncElems</span><span class="p">[</span><span class="n">elemN</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># column indices</span>
+    <span class="n">gg</span> <span class="o">=</span> <span class="n">shape_function_derivative</span><span class="p">(</span><span class="n">XIN</span><span class="p">,</span> <span class="n">elemOrder</span><span class="p">)</span>  <span class="c1"># fill values</span>
+    <span class="n">Dxitan</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">((</span><span class="n">gg</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="p">(</span><span class="n">ii</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">jj</span><span class="o">.</span><span class="n">flatten</span><span class="p">())))</span>
+    
+    <span class="c1"># tangent vector</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">Dxitan</span> <span class="o">@</span> <span class="n">Xunc</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">t</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">t</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>  <span class="c1"># normalization</span>
+    
+    <span class="c1"># normal vector (nQP,nCoord)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">t</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>  
+    
+    <span class="c1"># third vector (nQP,nCoord)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>  
+    
+    <span class="c1"># P is a matrix made of (3x3) diagonal blocks of size 12*nQP</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">t</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span>  <span class="c1"># all frames (nNodes,3*3)</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>  <span class="c1"># replicate for {TL,TR,BL,BR} (4*nNodes,3*3)</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># ((4*nNodes),3*3)</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="p">[</span><span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">diags</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">P</span><span class="p">]</span>  <span class="c1"># ((4*nNodes,4*nNodes),3*3)</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">bmat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">P</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>  <span class="c1"># (12*nNodes,12*nNodes)</span>
+
+    <span class="k">return</span> <span class="n">t</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">P</span></div>
+
+
+<div class="viewcode-block" id="elem2node">
+<a class="viewcode-back" href="../../modules.html#modules.fem.elem2node">[docs]</a>
+<span class="k">def</span> <span class="nf">elem2node</span><span class="p">(</span><span class="n">nNodes</span><span class="p">,</span> <span class="n">nLayers</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that returns the element to node transition matrix.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    nNodes : int</span>
+<span class="sd">        Number of nodes per layer.</span>
+<span class="sd">    nLayers : int</span>
+<span class="sd">        Number of layer in the structure.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    elem2node : sparse matrix of shape (nElemTOT, nNodesTOT)</span>
+<span class="sd">        Transition matrix between the element and the nodes</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">nn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">nNodes</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">nn</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span>
+    <span class="n">ii</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nNodes</span><span class="o">-</span><span class="mi">1</span><span class="p">)[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">elem2node</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">((</span> <span class="n">nn</span> <span class="p">,</span> <span class="p">(</span><span class="n">ii</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">ii</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">nNodes</span><span class="o">-</span><span class="mi">1</span><span class="p">)))))</span>
+    <span class="n">elem2node</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">nLayers</span><span class="p">),</span> <span class="n">elem2node</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">elem2node</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Rafaël Viano.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

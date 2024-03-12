@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>modules.mesh &mdash; QuadWire 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=8d563738"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            QuadWire
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">modules package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">QuadWire</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">modules.mesh</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for modules.mesh</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Module containing the discretisation and meshing functions of the QuadWire program &quot;&quot;&quot;</span>
+
+<span class="c1">#%% import packages</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1">#%% Discretization and meshing</span>
+
+<div class="viewcode-block" id="meshing_first_layer">
+<a class="viewcode-back" href="../../modules.html#modules.mesh.meshing_first_layer">[docs]</a>
+<span class="k">def</span> <span class="nf">meshing_first_layer</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">nNodes</span><span class="p">,</span> <span class="n">meshType</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="n">meshRefined</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that meshes the first layer of the structure.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    L : int</span>
+<span class="sd">        Length of the structure in tangential direction t.</span>
+<span class="sd">    nNodes : int</span>
+<span class="sd">        Number of nodes discretising the length L.</span>
+<span class="sd">    meshType : str, optional</span>
+<span class="sd">        Geometry of the first layer. Options available are &quot;linear&quot;, &quot;circular&quot; or &quot;sinus&quot;. </span>
+<span class="sd">        The default is &quot;linear&quot;.</span>
+<span class="sd">    meshRefined : bool, optional</span>
+<span class="sd">        Option available for the a &quot;linear&quot; mesh : refinement of the mesh close to the edges of the structure.</span>
+<span class="sd">        The default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    X : array of size (nNodes, nCoord)</span>
+<span class="sd">        Coordinates of each nodes in the global reference (x1, x2, x3).</span>
+<span class="sd">    Elems : array of size (nNodes - 1, 2)</span>
+<span class="sd">        Index of the pair of nodes forming an element.</span>
+<span class="sd">    U0 : array of size (nCoord, nParticule, nNodes)</span>
+<span class="sd">        Boundary conditions for particles attached to each node : NaN when the particule has no imposed bc. </span>
+<span class="sd">        Particules are indexed as {TL,TR,BL,BR}. </span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">meshType</span> <span class="o">==</span> <span class="s2">&quot;linear&quot;</span><span class="p">:</span>
+        <span class="n">x1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nNodes</span><span class="p">)</span> <span class="o">*</span> <span class="n">L</span> <span class="o">/</span> <span class="mi">2</span>  <span class="c1"># uniform mesh</span>
+        <span class="k">if</span> <span class="n">meshRefined</span> <span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="mi">2</span> <span class="p">;</span> <span class="n">x1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">p</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">nNodes</span><span class="p">))</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">*</span><span class="n">L</span><span class="o">/</span><span class="mi">2</span> <span class="p">;</span> <span class="c1"># heterogeneous mesh</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">x1</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># straight line along X1</span>
+        <span class="n">Elems</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nNodes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># simple elements</span>
+        <span class="n">U0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">([[[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">],[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">],[</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">]]],(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">nNodes</span><span class="p">))</span> <span class="c1"># clamp all {BL,BR} wires</span>
+
+    <span class="k">elif</span> <span class="n">meshType</span> <span class="o">==</span> <span class="s2">&quot;circular&quot;</span><span class="p">:</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nNodes</span><span class="p">)[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span><span class="o">/</span><span class="n">nNodes</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">L</span><span class="o">/</span><span class="mi">2</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">R</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span><span class="n">R</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span><span class="n">theta</span><span class="o">*</span><span class="mi">0</span><span class="p">))</span> <span class="c1"># straight line along X1</span>
+        <span class="n">Elems</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nNodes</span><span class="p">)[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span><span class="o">+</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">nNodes</span><span class="p">)</span> <span class="c1"># simple elements</span>
+        <span class="n">U0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">([[[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">],[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">],[</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">]]],(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">nNodes</span><span class="p">))</span> <span class="c1"># clamp all {BL,BR} wires</span>
+        
+    <span class="k">elif</span> <span class="n">meshType</span><span class="o">==</span><span class="s2">&quot;square&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">nNodes</span><span class="o">%</span><span class="mi">4</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Le nombre de noeuds par couche renseigné n&#39;est pas divisible par 4&quot;</span><span class="p">)</span>
+        <span class="n">dl</span> <span class="o">=</span> <span class="n">L</span> <span class="o">/</span> <span class="n">nNodes</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">nNodes</span><span class="o">//</span><span class="mi">4</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nNodes</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">i</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+                    <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="n">c</span> <span class="o">+</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">j</span><span class="o">*</span><span class="n">dl</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="n">i</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                    <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="n">c</span> <span class="o">+</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">*</span><span class="n">dl</span><span class="p">,</span> <span class="n">j</span><span class="o">*</span><span class="n">dl</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="n">i</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
+                    <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="n">c</span> <span class="o">+</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="n">c</span><span class="o">-</span><span class="n">j</span><span class="p">)</span><span class="o">*</span><span class="n">dl</span><span class="p">,</span> <span class="n">c</span><span class="o">*</span><span class="n">dl</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="n">i</span><span class="o">==</span><span class="mi">3</span><span class="p">:</span>
+                    <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="n">c</span> <span class="o">+</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">c</span><span class="o">-</span><span class="n">j</span><span class="p">)</span><span class="o">*</span><span class="n">dl</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+                    
+        <span class="n">Elems</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nNodes</span><span class="p">)[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span><span class="o">+</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">nNodes</span><span class="p">)</span> <span class="c1"># simple elements</span>
+        <span class="n">U0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">([[[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">],[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">],[</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">]]],(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">nNodes</span><span class="p">))</span> <span class="c1"># clamp all {BL,BR} wires</span>
+
+    <span class="k">elif</span> <span class="n">meshType</span> <span class="o">==</span> <span class="s2">&quot;quarter_circular&quot;</span><span class="p">:</span>
+        <span class="n">t_val</span> <span class="o">=</span> <span class="mi">41</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">t_val</span><span class="o">/</span><span class="mi">360</span><span class="p">),</span> <span class="n">nNodes</span> <span class="p">)[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="c1"># theta = np.arange(nNodes)[:,np.newaxis]/nNodes* (2*np.pi*t_val/360)</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">L</span><span class="o">/</span><span class="mi">2</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">R</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span><span class="n">R</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span><span class="n">theta</span><span class="o">*</span><span class="mi">0</span><span class="p">))</span> <span class="c1"># straight line along X1</span>
+        <span class="n">Elems</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nNodes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># simple elements</span>
+        <span class="c1"># U0 = np.stack(( np.tile([[[0],[0],[0],[0]]],(3,1,1)) , np.tile([[[np.nan],[np.nan],[np.nan],[np.nan]]],(3,1,nNodes-1))), axis = 2) </span>
+        <span class="n">U0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">([[[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">],[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">],[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">],[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">]]],</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">nNodes</span><span class="p">))</span> <span class="c1"># glisse</span>
+        <span class="c1"># U0 = np.tile([[[np.nan],[np.nan],[0],[0]]], (3,1,nNodes)) # plan</span>
+
+        <span class="n">U0</span><span class="p">[:,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">1</span> <span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">([[[</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">]]],(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+        
+        
+    <span class="k">elif</span> <span class="n">meshType</span> <span class="o">==</span> <span class="s2">&quot;sinus&quot;</span><span class="p">:</span> 
+        <span class="n">x1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">L</span><span class="p">,</span><span class="n">nNodes</span><span class="p">)[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">x1</span><span class="p">,</span><span class="mf">.25</span><span class="o">*</span><span class="n">L</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">1.0</span><span class="o">*</span><span class="n">x1</span><span class="o">/</span><span class="n">L</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">),</span><span class="n">x1</span><span class="o">*</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">Elems</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nNodes</span><span class="o">-</span><span class="mi">1</span><span class="p">)[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span><span class="o">+</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="c1"># simple elements</span>
+        <span class="n">U0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">([[[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">],[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">],[</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">]]],(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">nNodes</span><span class="p">))</span> <span class="c1"># clamp all {BL,BR} wires</span>
+        
+    <span class="k">else</span> <span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;La maillage renseigné n&#39;est pas connu&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">Elems</span><span class="p">,</span> <span class="n">U0</span></div>
+
+
+<div class="viewcode-block" id="mesh_structure">
+<a class="viewcode-back" href="../../modules.html#modules.mesh.mesh_structure">[docs]</a>
+<span class="k">def</span> <span class="nf">mesh_structure</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Elems</span><span class="p">,</span> <span class="n">U0</span><span class="p">,</span> <span class="n">nLayers</span><span class="p">,</span> <span class="n">nNodes</span><span class="p">,</span> <span class="n">buildDirection</span><span class="p">,</span> <span class="n">H</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that replicates the mesh of the first layer to generate the mesh of the whole structure</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : array of size (nNodes, 3)</span>
+<span class="sd">        Coordinates of each nodes in the global reference (t,n,b).</span>
+<span class="sd">    Elems : array of size (nNodes - 1, 2)</span>
+<span class="sd">        Index of the pair of nodes forming an element.</span>
+<span class="sd">    U0 : array of size (3, 4, nNodes)</span>
+<span class="sd">        Boundary conditions for particles attached to each node : NaN when the particule has no imposed bc. </span>
+<span class="sd">        Particules are indexed as {TL,TR,BL,BR}. </span>
+<span class="sd">    nLayers : int</span>
+<span class="sd">        Number of layers of the structure in the build dirction.</span>
+<span class="sd">    nNodes : int</span>
+<span class="sd">        Number of nodes discretising the length L.</span>
+<span class="sd">    buildDirection : str</span>
+<span class="sd">        Build direction of the structure &quot;v&quot; for a wall structure and &quot;h&quot; for a carpet structure.</span>
+<span class="sd">    H : float</span>
+<span class="sd">        Width of the section of the bead in the build direction. Hb for option &quot;v&quot; and Hn for option &quot;h&quot;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    X : array of size (nNodes*nLayers, 3)</span>
+<span class="sd">        Coordinates of each nodes in the global reference (t,n,b).</span>
+<span class="sd">    Elems : array of size ((nNodes - 1)*nLayers, 2)</span>
+<span class="sd">        Index of the pair of nodes forming an element.</span>
+<span class="sd">    U0 : array of size (3, 4, nNodes*nLayers)</span>
+<span class="sd">        Boundary conditions for particles attached to each node : NaN when the particule has no imposed bc. Particules are indexed as {TL,TR,BL,BR}. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">## Replicate the bead in the building direction</span>
+    <span class="k">if</span> <span class="n">buildDirection</span> <span class="o">==</span> <span class="s2">&quot;h&quot;</span> <span class="p">:</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">X</span><span class="p">,(</span><span class="n">nLayers</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nLayers</span><span class="p">)[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span><span class="o">*</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">H</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="n">nNodes</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>             
+        <span class="n">U0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">U0</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">U0</span><span class="p">,(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">nLayers</span><span class="o">-</span><span class="mi">1</span><span class="p">))),</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">buildDirection</span> <span class="o">==</span> <span class="s2">&quot;v&quot;</span> <span class="p">:</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="p">(</span><span class="n">nLayers</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nLayers</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">H</span><span class="p">],</span> <span class="n">nNodes</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  
+        <span class="n">U0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">U0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="o">*</span> <span class="n">U0</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nLayers</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>  
+            
+    <span class="c1">## Replicate the elements</span>
+    <span class="n">Elems</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">Elems</span><span class="p">,</span> <span class="p">(</span><span class="n">nLayers</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="n">nNodes</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nLayers</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">Elems</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">Elems</span><span class="p">,</span> <span class="n">U0</span></div>
+
+
+
+<div class="viewcode-block" id="welding_conditions">
+<a class="viewcode-back" href="../../modules.html#modules.mesh.welding_conditions">[docs]</a>
+<span class="k">def</span> <span class="nf">welding_conditions</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Elems</span><span class="p">,</span> <span class="n">U0</span><span class="p">,</span> <span class="n">nLayers</span><span class="p">,</span> <span class="n">nNodes</span><span class="p">,</span> <span class="n">buildDirection</span><span class="p">,</span> <span class="n">H</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that returns a matrix of wire welding conditions of the structure</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : array of size (nNodes, 3)</span>
+<span class="sd">        Coordinates of each nodes in the global reference (t,n,b).</span>
+<span class="sd">    Elems : array of size (nNodes - 1, 2)</span>
+<span class="sd">        Index of the pair of nodes forming an element.</span>
+<span class="sd">    U0 : array of size (3, 4, nNodes)</span>
+<span class="sd">        Boundary conditions for particles attached to each node : NaN when the particule has no imposed bc. </span>
+<span class="sd">        Particules are indexed as {TL,TR,BL,BR}. </span>
+<span class="sd">    nLayers : int</span>
+<span class="sd">        Number of layers of the structure in the build dirction.</span>
+<span class="sd">    nNodes : int</span>
+<span class="sd">        Number of nodes discretising the length L.</span>
+<span class="sd">    buildDirection : str</span>
+<span class="sd">        Build direction of the structure &quot;v&quot; for a wall structure and &quot;h&quot; for a carpet structure.</span>
+<span class="sd">    H : float</span>
+<span class="sd">        Width of the section of the bead in the build direction. Hb for option &quot;v&quot; and Hn for option &quot;h&quot;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    weldDOF : array of size (nNodes*(nLayers-1)*2, 4) - number of layer interface * two welding conditions</span>
+<span class="sd">        Array listing the welding conditions between the wires </span>
+<span class="sd">        The k^th welding condition is given by : weldDOF[k] = [indexNode1, node1Particule, indexNode2, node2Particule] which means that the the node1Particule chosen is welded to the node2Particule</span>
+<span class="sd">        There are nInterface*nNodes*2 welding conditions in between wires</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">weldNodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nNodes</span><span class="p">)[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span><span class="o">*</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">nNodes</span><span class="p">]</span>
+    <span class="n">weldNodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">weldNodes</span><span class="p">,</span> <span class="p">(</span><span class="n">nLayers</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">nNodes</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nLayers</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">nNodes</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">buildDirection</span> <span class="o">==</span> <span class="s2">&quot;h&quot;</span> <span class="p">:</span>
+        <span class="c1">## welding TR to TL and BR to BL: weldDOF = [ [[iNode,0,iNode+nNodes,2],[iNode,1,iNode+nNodes,3]] for iNode in range(nNodes)]</span>
+        <span class="n">weldDOF</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">weldNodes</span><span class="p">[:,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]]</span><span class="o">*</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">]],</span><span class="n">weldNodes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">buildDirection</span> <span class="o">==</span> <span class="s2">&quot;v&quot;</span> <span class="p">:</span>
+        <span class="c1">## welding TL to BL and TR to BR: weldDOF = [ [[iNode,0,iNode+nNodes,2],[iNode,1,iNode+nNodes,3]] for iNode in range(nNodes)]</span>
+        <span class="n">weldDOF</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">weldNodes</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span> <span class="o">*</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">]],</span>
+                        <span class="n">weldNodes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># vertical welding (on top of eachother)</span>
+    <span class="k">return</span> <span class="n">weldDOF</span></div>
+
+
+<div class="viewcode-block" id="second_order_discretization">
+<a class="viewcode-back" href="../../modules.html#modules.mesh.second_order_discretization">[docs]</a>
+<span class="k">def</span> <span class="nf">second_order_discretization</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Elems</span><span class="p">,</span> <span class="n">U0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that updates the mesh and discretisation in the case of second order element in the FEM definition</span>
+<span class="sd">    Three-nodes element</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : array of size (nNodes*nLayers, nCoord)</span>
+<span class="sd">        Coordinates of each nodes in the global reference (t,n,b).</span>
+<span class="sd">    Elems : array of size ((nNodes - 1)*nLayers, 2)</span>
+<span class="sd">        Index of the pair of nodes forming an element.</span>
+<span class="sd">    U0 : array of size (3, 4, nNodes*nLayers)</span>
+<span class="sd">        Boundary conditions for particles attached to each node : NaN when the particule has no imposed bc. Particules are indexed as {TL,TR,BL,BR}. </span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    X : array of size ((2*nNodes-1)*nLayers, nCoord)</span>
+<span class="sd">        Coordinates of each nodes in the global reference (t,n,b).</span>
+<span class="sd">    Elems : array of size ((nNodes - 1)*nLayers, 3)</span>
+<span class="sd">        Index of the pair of nodes forming an element.</span>
+<span class="sd">    U0 : array of size (3, 4, (2*nNodes-1)*nLayers)</span>
+<span class="sd">        Boundary conditions for particles attached to each node : NaN when the particule has no imposed bc. Particules are indexed as {TL,TR,BL,BR}. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># element mid-point to be added</span>
+    <span class="n">Xmid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">Elems</span><span class="p">,</span> <span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># interpolate BC</span>
+    <span class="n">U0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">U0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">U0</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">Elems</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">3</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>  
+    <span class="c1"># update the element nodes list</span>
+    <span class="n">Elems</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">Elems</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">][:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Elems</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">+</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Elems</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">][:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]])</span>
+    <span class="c1"># update the nodes coordinates list</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">X</span><span class="p">,</span> <span class="n">Xmid</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">Elems</span><span class="p">,</span> <span class="n">U0</span></div>
+
+
+<div class="viewcode-block" id="uncouple_nodes">
+<a class="viewcode-back" href="../../modules.html#modules.mesh.uncouple_nodes">[docs]</a>
+<span class="k">def</span> <span class="nf">uncouple_nodes</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Elems</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that transforms the &quot;coupled&quot; vectors (X, Elems) in their uncoupled version</span>
+<span class="sd">    Elements were numbered as such V = [[0, 1], [1, 2], ...] and now Vunc = [[0, 1], [2, 3], ...]</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : array of size (nNodes*nLayers, nCoord)</span>
+<span class="sd">        Coordinates of each nodes in the global reference (t,n,b).</span>
+<span class="sd">    Elems : array of size ((nNodes - 1)*nLayers, elemOrder + 1)</span>
+<span class="sd">        Index of the pair of nodes forming an element.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Xunc : array of size ((elemOrder+1)*(nNodes - 2 + 1)*nLayers, nCoord) or (nUncNodes, nCoord)</span>
+<span class="sd">        Coordinates of each uncoupled nodes in the global reference (t,n,b)..</span>
+<span class="sd">    uncElems : array of size ((nNodes - 1)*nLayers, elemOrder + 1) or (nElemTot, elemOrder + 1)</span>
+<span class="sd">        Index of the pair of nodes forming an uncoupled element.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nElems</span> <span class="o">=</span> <span class="n">Elems</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">nNodesByElem</span> <span class="o">=</span> <span class="n">Elems</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    
+    <span class="c1"># Coordinates of nodes of each element, as if they were uncoupled (nUncNodes,nCoord)</span>
+    <span class="n">Xunc</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">Elems</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="p">:]</span> 
+    
+    <span class="c1"># New element-uncoupled node connectivity</span>
+    <span class="n">uncElems</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nElems</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="n">nNodesByElem</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nNodesByElem</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Xunc</span><span class="p">,</span> <span class="n">uncElems</span></div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Rafaël Viano.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

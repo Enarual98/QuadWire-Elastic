@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>modules.forces &mdash; QuadWire 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=8d563738"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            QuadWire
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">modules package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">QuadWire</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">modules.forces</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for modules.forces</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Module containing functions for tracing internal forces and reconstructing a cauchy stress tensor &quot;&quot;&quot;</span>
+<span class="c1">#%% import packages</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy</span> <span class="k">as</span> <span class="nn">sp</span>
+
+<span class="c1">#%%</span>
+
+<div class="viewcode-block" id="internal_forces">
+<a class="viewcode-back" href="../../modules.html#modules.forces.internal_forces">[docs]</a>
+<span class="k">def</span> <span class="nf">internal_forces</span><span class="p">(</span><span class="n">Sigma</span><span class="p">,</span> <span class="n">Hn</span><span class="p">,</span> <span class="n">Hb</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that returns the QuadWire internal forces</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Sigma : array of size (nInc*nQP, 1)</span>
+<span class="sd">        QW generalized stresses.</span>
+<span class="sd">        k*nQP to (k+1)*nQP gives the k^th generalized stress at each quadrature points.</span>
+<span class="sd">    Hn : float</span>
+<span class="sd">        Length of the section of the bead in the n direction.</span>
+<span class="sd">    Hb : float</span>
+<span class="sd">        Length of the section of the bead in the b direction.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    f1 : array of size (nCoord, nQP, 1)</span>
+<span class="sd">        Internal force per length unit of particule 1 expressed at the quadrature points.</span>
+<span class="sd">    f2 : array of size (nCoord, nQP, 1)</span>
+<span class="sd">        Internal force per length unit of particule 2 expressed at the quadrature points.</span>
+<span class="sd">    f3 : array of size (nCoord, nQP, 1)</span>
+<span class="sd">        Internal force per length unit of particule 3 expressed at the quadrature points.</span>
+<span class="sd">    f4 : array of size (nCoord, nQP, 1)</span>
+<span class="sd">        Internal force per length unit of particule 4 expressed at the quadrature points.</span>
+<span class="sd">        </span>
+<span class="sd">    F1 : array of size (nCoord, nQP, 1)</span>
+<span class="sd">        Internal force of particule 1 expressed at the quadrature points.</span>
+<span class="sd">    F2 : array of size (nCoord, nQP, 1)</span>
+<span class="sd">        Internal force of particule 2 expressed at the quadrature points.</span>
+<span class="sd">    F3 : array of size (nCoord, nQP, 1)</span>
+<span class="sd">        Internal force of particule 3 expressed at the quadrature points.</span>
+<span class="sd">    F4 : array of size (nCoord, nQP, 1)</span>
+<span class="sd">        Internal force of particule 4 expressed at the quadrature points.</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nQP</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">Sigma</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="mi">15</span><span class="p">)</span>
+    
+    <span class="n">s1</span> <span class="o">=</span> <span class="n">Sigma</span><span class="p">[</span><span class="n">nQP</span><span class="o">*</span><span class="mi">0</span><span class="p">:</span><span class="n">nQP</span><span class="o">*</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">s2</span> <span class="o">=</span> <span class="n">Sigma</span><span class="p">[</span><span class="n">nQP</span><span class="o">*</span><span class="mi">1</span><span class="p">:</span><span class="n">nQP</span><span class="o">*</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">s3</span> <span class="o">=</span> <span class="n">Sigma</span><span class="p">[</span><span class="n">nQP</span><span class="o">*</span><span class="mi">2</span><span class="p">:</span><span class="n">nQP</span><span class="o">*</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">s4</span> <span class="o">=</span> <span class="n">Sigma</span><span class="p">[</span><span class="n">nQP</span><span class="o">*</span><span class="mi">3</span><span class="p">:</span><span class="n">nQP</span><span class="o">*</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">s5</span> <span class="o">=</span> <span class="n">Sigma</span><span class="p">[</span><span class="n">nQP</span><span class="o">*</span><span class="mi">4</span><span class="p">:</span><span class="n">nQP</span><span class="o">*</span><span class="mi">5</span><span class="p">]</span>
+    <span class="n">s6</span> <span class="o">=</span> <span class="n">Sigma</span><span class="p">[</span><span class="n">nQP</span><span class="o">*</span><span class="mi">5</span><span class="p">:</span><span class="n">nQP</span><span class="o">*</span><span class="mi">6</span><span class="p">]</span>
+    
+    <span class="n">Mn_t</span> <span class="o">=</span> <span class="n">Sigma</span><span class="p">[</span><span class="n">nQP</span><span class="o">*</span><span class="mi">6</span><span class="p">:</span><span class="n">nQP</span><span class="o">*</span><span class="mi">7</span><span class="p">]</span>
+    <span class="n">Mn_n</span> <span class="o">=</span> <span class="n">Sigma</span><span class="p">[</span><span class="n">nQP</span><span class="o">*</span><span class="mi">7</span><span class="p">:</span><span class="n">nQP</span><span class="o">*</span><span class="mi">8</span><span class="p">]</span>
+    <span class="n">Mn_b</span> <span class="o">=</span> <span class="n">Sigma</span><span class="p">[</span><span class="n">nQP</span><span class="o">*</span><span class="mi">8</span><span class="p">:</span><span class="n">nQP</span><span class="o">*</span><span class="mi">9</span><span class="p">]</span>
+    
+    <span class="n">Mb_t</span> <span class="o">=</span> <span class="n">Sigma</span><span class="p">[</span><span class="n">nQP</span><span class="o">*</span><span class="mi">9</span><span class="p">:</span><span class="n">nQP</span><span class="o">*</span><span class="mi">10</span><span class="p">]</span>
+    <span class="n">Mb_n</span> <span class="o">=</span> <span class="n">Sigma</span><span class="p">[</span><span class="n">nQP</span><span class="o">*</span><span class="mi">10</span><span class="p">:</span><span class="n">nQP</span><span class="o">*</span><span class="mi">11</span><span class="p">]</span>
+    <span class="n">Mb_b</span> <span class="o">=</span> <span class="n">Sigma</span><span class="p">[</span><span class="n">nQP</span><span class="o">*</span><span class="mi">11</span><span class="p">:</span><span class="n">nQP</span><span class="o">*</span><span class="mi">12</span><span class="p">]</span>
+    
+    <span class="n">mx_t</span> <span class="o">=</span> <span class="n">Sigma</span><span class="p">[</span><span class="n">nQP</span><span class="o">*</span><span class="mi">12</span><span class="p">:</span><span class="n">nQP</span><span class="o">*</span><span class="mi">13</span><span class="p">]</span>
+    <span class="n">mx_n</span> <span class="o">=</span> <span class="n">Sigma</span><span class="p">[</span><span class="n">nQP</span><span class="o">*</span><span class="mi">13</span><span class="p">:</span><span class="n">nQP</span><span class="o">*</span><span class="mi">14</span><span class="p">]</span>
+    <span class="n">mx_b</span> <span class="o">=</span> <span class="n">Sigma</span><span class="p">[</span><span class="n">nQP</span><span class="o">*</span><span class="mi">14</span><span class="p">:</span><span class="n">nQP</span><span class="o">*</span><span class="mi">15</span><span class="p">]</span>
+    
+    <span class="n">F_t</span> <span class="o">=</span> <span class="n">s1</span>
+    <span class="n">F_n</span> <span class="o">=</span> <span class="n">s4</span>
+    <span class="n">F_b</span> <span class="o">=</span> <span class="n">s5</span>
+    
+    <span class="n">mn_t</span> <span class="o">=</span> <span class="o">-</span> <span class="n">s4</span>
+    <span class="n">mn_n</span> <span class="o">=</span> <span class="o">-</span> <span class="n">s2</span>
+    <span class="n">mn_b</span> <span class="o">=</span> <span class="o">-</span> <span class="n">s6</span>
+    
+    <span class="n">mb_t</span> <span class="o">=</span> <span class="o">-</span> <span class="n">s5</span>
+    <span class="n">mb_n</span> <span class="o">=</span> <span class="o">-</span> <span class="n">s6</span>
+    <span class="n">mb_b</span> <span class="o">=</span> <span class="o">-</span> <span class="n">s3</span>
+    
+    <span class="n">f1t</span> <span class="o">=</span> <span class="n">mn_t</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hn</span><span class="p">)</span><span class="o">+</span><span class="n">mb_t</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span><span class="o">+</span><span class="n">mx_t</span><span class="o">/</span><span class="p">(</span><span class="n">Hn</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+    <span class="n">f2t</span> <span class="o">=</span> <span class="n">mn_t</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hn</span><span class="p">)</span><span class="o">-</span><span class="n">mb_t</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span><span class="o">-</span><span class="n">mx_t</span><span class="o">/</span><span class="p">(</span><span class="n">Hn</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+    <span class="n">f3t</span> <span class="o">=</span> <span class="o">-</span><span class="n">mn_t</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hn</span><span class="p">)</span><span class="o">+</span><span class="n">mb_t</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span><span class="o">-</span><span class="n">mx_t</span><span class="o">/</span><span class="p">(</span><span class="n">Hn</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+    <span class="n">f4t</span> <span class="o">=</span> <span class="o">-</span><span class="n">mn_t</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hn</span><span class="p">)</span><span class="o">-</span><span class="n">mb_t</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span><span class="o">+</span><span class="n">mx_t</span><span class="o">/</span><span class="p">(</span><span class="n">Hn</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+
+    <span class="n">f1n</span> <span class="o">=</span> <span class="n">mn_n</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hn</span><span class="p">)</span><span class="o">+</span><span class="n">mb_n</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span><span class="o">+</span><span class="n">mx_n</span><span class="o">/</span><span class="p">(</span><span class="n">Hn</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+    <span class="n">f2n</span> <span class="o">=</span> <span class="n">mn_n</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hn</span><span class="p">)</span><span class="o">-</span><span class="n">mb_n</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span><span class="o">-</span><span class="n">mx_n</span><span class="o">/</span><span class="p">(</span><span class="n">Hn</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+    <span class="n">f3n</span> <span class="o">=</span> <span class="o">-</span><span class="n">mn_n</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hn</span><span class="p">)</span><span class="o">+</span><span class="n">mb_n</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span><span class="o">-</span><span class="n">mx_n</span><span class="o">/</span><span class="p">(</span><span class="n">Hn</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+    <span class="n">f4n</span> <span class="o">=</span> <span class="o">-</span><span class="n">mn_n</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hn</span><span class="p">)</span><span class="o">-</span><span class="n">mb_n</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span><span class="o">+</span><span class="n">mx_n</span><span class="o">/</span><span class="p">(</span><span class="n">Hn</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+
+    <span class="n">f1b</span> <span class="o">=</span> <span class="n">mn_b</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hn</span><span class="p">)</span><span class="o">+</span><span class="n">mb_b</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span><span class="o">+</span><span class="n">mx_b</span><span class="o">/</span><span class="p">(</span><span class="n">Hn</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+    <span class="n">f2b</span> <span class="o">=</span> <span class="n">mn_b</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hn</span><span class="p">)</span><span class="o">-</span><span class="n">mb_b</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span><span class="o">-</span><span class="n">mx_b</span><span class="o">/</span><span class="p">(</span><span class="n">Hn</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+    <span class="n">f3b</span> <span class="o">=</span> <span class="o">-</span><span class="n">mn_b</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hn</span><span class="p">)</span><span class="o">+</span><span class="n">mb_b</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span><span class="o">-</span><span class="n">mx_b</span><span class="o">/</span><span class="p">(</span><span class="n">Hn</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+    <span class="n">f4b</span> <span class="o">=</span> <span class="o">-</span><span class="n">mn_b</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hn</span><span class="p">)</span><span class="o">-</span><span class="n">mb_b</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span><span class="o">+</span><span class="n">mx_b</span><span class="o">/</span><span class="p">(</span><span class="n">Hn</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+
+    <span class="n">F1t</span> <span class="o">=</span> <span class="n">F_t</span><span class="o">/</span><span class="mi">4</span><span class="o">+</span><span class="n">Mn_t</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hn</span><span class="p">)</span><span class="o">+</span><span class="n">Mb_t</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+    <span class="n">F2t</span> <span class="o">=</span> <span class="n">F_t</span><span class="o">/</span><span class="mi">4</span><span class="o">+</span><span class="n">Mn_t</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hn</span><span class="p">)</span><span class="o">-</span><span class="n">Mb_t</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+    <span class="n">F3t</span> <span class="o">=</span> <span class="n">F_t</span><span class="o">/</span><span class="mi">4</span><span class="o">-</span><span class="n">Mn_t</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hn</span><span class="p">)</span><span class="o">+</span><span class="n">Mb_t</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+    <span class="n">F4t</span> <span class="o">=</span> <span class="n">F_t</span><span class="o">/</span><span class="mi">4</span><span class="o">-</span><span class="n">Mn_t</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hn</span><span class="p">)</span><span class="o">-</span><span class="n">Mb_t</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+
+    <span class="n">F1n</span> <span class="o">=</span> <span class="n">F_n</span><span class="o">/</span><span class="mi">4</span><span class="o">+</span><span class="n">Mn_n</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hn</span><span class="p">)</span><span class="o">+</span><span class="n">Mb_n</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+    <span class="n">F2n</span> <span class="o">=</span> <span class="n">F_n</span><span class="o">/</span><span class="mi">4</span><span class="o">+</span><span class="n">Mn_n</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hn</span><span class="p">)</span><span class="o">-</span><span class="n">Mb_n</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+    <span class="n">F3n</span> <span class="o">=</span> <span class="n">F_n</span><span class="o">/</span><span class="mi">4</span><span class="o">-</span><span class="n">Mn_n</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hn</span><span class="p">)</span><span class="o">+</span><span class="n">Mb_n</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+    <span class="n">F4n</span> <span class="o">=</span> <span class="n">F_n</span><span class="o">/</span><span class="mi">4</span><span class="o">-</span><span class="n">Mn_n</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hn</span><span class="p">)</span><span class="o">-</span><span class="n">Mb_n</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+
+    <span class="n">F1b</span> <span class="o">=</span> <span class="n">F_b</span><span class="o">/</span><span class="mi">4</span><span class="o">+</span><span class="n">Mn_b</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hn</span><span class="p">)</span><span class="o">+</span><span class="n">Mb_b</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+    <span class="n">F2b</span> <span class="o">=</span> <span class="n">F_b</span><span class="o">/</span><span class="mi">4</span><span class="o">+</span><span class="n">Mn_b</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hn</span><span class="p">)</span><span class="o">-</span><span class="n">Mb_b</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+    <span class="n">F3b</span> <span class="o">=</span> <span class="n">F_b</span><span class="o">/</span><span class="mi">4</span><span class="o">-</span><span class="n">Mn_b</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hn</span><span class="p">)</span><span class="o">+</span><span class="n">Mb_b</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+    <span class="n">F4b</span> <span class="o">=</span> <span class="n">F_b</span><span class="o">/</span><span class="mi">4</span><span class="o">-</span><span class="n">Mn_b</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hn</span><span class="p">)</span><span class="o">-</span><span class="n">Mb_b</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="p">[</span><span class="n">f1t</span><span class="p">,</span> <span class="n">f1n</span><span class="p">,</span> <span class="n">f1b</span><span class="p">],</span> <span class="p">[</span><span class="n">f2t</span><span class="p">,</span> <span class="n">f2n</span><span class="p">,</span> <span class="n">f2b</span><span class="p">],</span> <span class="p">[</span><span class="n">f3t</span><span class="p">,</span> <span class="n">f3n</span><span class="p">,</span> <span class="n">f3b</span><span class="p">],</span> <span class="p">[</span><span class="n">f4t</span><span class="p">,</span> <span class="n">f4n</span><span class="p">,</span> <span class="n">f4b</span><span class="p">],</span> <span class="p">[</span><span class="n">F1t</span><span class="p">,</span> <span class="n">F1n</span><span class="p">,</span> <span class="n">F1b</span><span class="p">],</span> <span class="p">[</span><span class="n">F2t</span><span class="p">,</span> <span class="n">F2n</span><span class="p">,</span> <span class="n">F2b</span><span class="p">],</span> <span class="p">[</span><span class="n">F3t</span><span class="p">,</span> <span class="n">F3n</span><span class="p">,</span> <span class="n">F3b</span><span class="p">],</span> <span class="p">[</span><span class="n">F4t</span><span class="p">,</span> <span class="n">F4n</span><span class="p">,</span> <span class="n">F4b</span><span class="p">]</span></div>
+
+<span class="c1">#     return np.array([f1t, f1n, f1b]), np.array([f2t, f2n, f2b]), np.array([f3t, f3n, f3b]), np.array([f4t, f4n, f4b]), np.array([F1t, F1n, F1b]), np.array([F2t, F2n, F2b]), np.array([F3t, F3n, F3b]), np.array([F4t, F4n, F4b])</span>
+
+
+<div class="viewcode-block" id="sigma3D">
+<a class="viewcode-back" href="../../modules.html#modules.forces.sigma3D">[docs]</a>
+<span class="k">def</span> <span class="nf">sigma3D</span><span class="p">(</span><span class="n">Sigma</span><span class="p">,</span> <span class="n">Hn</span><span class="p">,</span> <span class="n">Hb</span><span class="p">):</span> 
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that reconstruct the 3D cauchy stress tensor</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Sigma : array of size (nInc*nQP, 1)</span>
+<span class="sd">        QW generalized stresses.</span>
+<span class="sd">        k*nQP to (k+1)*nQP gives the k^th generalized stress at each quadrature points.</span>
+<span class="sd">    Hn : float</span>
+<span class="sd">        Length of the section of the bead in the n direction.</span>
+<span class="sd">    Hb : float</span>
+<span class="sd">        Length of the section of the bead in the b direction.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Sigma3D_tt : TYPE</span>
+<span class="sd">        DESCRIPTION.</span>
+<span class="sd">    Sigma3D_tn : TYPE</span>
+<span class="sd">        DESCRIPTION.</span>
+<span class="sd">    Sigma3D_tb : TYPE</span>
+<span class="sd">        DESCRIPTION.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">f1</span><span class="p">,</span> <span class="n">f2</span><span class="p">,</span> <span class="n">f3</span><span class="p">,</span> <span class="n">f4</span><span class="p">,</span> <span class="n">F1</span><span class="p">,</span> <span class="n">F2</span><span class="p">,</span> <span class="n">F3</span><span class="p">,</span> <span class="n">F4</span> <span class="o">=</span> <span class="n">internal_forces</span><span class="p">(</span><span class="n">Sigma</span><span class="p">,</span> <span class="n">Hn</span><span class="p">,</span> <span class="n">Hb</span><span class="p">)</span>
+    
+    <span class="n">Sigma3D_tt</span> <span class="o">=</span> <span class="p">(</span><span class="n">f1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">f2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">f3</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">f4</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="n">Hn</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+    <span class="n">Sigma3D_tn</span> <span class="o">=</span> <span class="p">(</span><span class="n">f1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">f2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">f3</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">f4</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="n">Hn</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+    <span class="n">Sigma3D_tb</span> <span class="o">=</span> <span class="p">(</span><span class="n">f1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">f2</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">f3</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">f4</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="n">Hn</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+
+    
+    <span class="k">return</span> <span class="n">Sigma3D_tt</span><span class="p">,</span> <span class="n">Sigma3D_tn</span><span class="p">,</span> <span class="n">Sigma3D_tb</span></div>
+
+    
+<div class="viewcode-block" id="comp_sigma3D_t">
+<a class="viewcode-back" href="../../modules.html#modules.forces.comp_sigma3D_t">[docs]</a>
+<span class="k">def</span> <span class="nf">comp_sigma3D_t</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">Hn</span><span class="p">,</span> <span class="n">Hb</span><span class="p">):</span> 
+    <span class="n">comp_Sigma_3D_t</span> <span class="o">=</span> <span class="n">f</span><span class="o">/</span><span class="p">(</span><span class="n">Hn</span><span class="o">*</span><span class="n">Hb</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">comp_Sigma_3D_t</span></div>
+
+    
+  
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Rafaël Viano.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

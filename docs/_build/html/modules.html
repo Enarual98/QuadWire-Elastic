@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modules packages &mdash; QuadWire 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=8d563738"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="qw_structure module" href="qw_structure.html" />
+    <link rel="prev" title="Welcome to QuadWire’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            QuadWire
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Modules packages</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-modules.behavior">modules.behavior</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#modules.behavior.assembly_behavior"><code class="docutils literal notranslate"><span class="pre">assembly_behavior()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.behavior.dTfcn"><code class="docutils literal notranslate"><span class="pre">dTfcn()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.behavior.derivation_chi"><code class="docutils literal notranslate"><span class="pre">derivation_chi()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.behavior.derivation_xi"><code class="docutils literal notranslate"><span class="pre">derivation_xi()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.behavior.dryingEigenstrain"><code class="docutils literal notranslate"><span class="pre">dryingEigenstrain()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.behavior.energyDensity"><code class="docutils literal notranslate"><span class="pre">energyDensity()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.behavior.homogeneization_Rxi"><code class="docutils literal notranslate"><span class="pre">homogeneization_Rxi()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.behavior.homogenization_Rchi"><code class="docutils literal notranslate"><span class="pre">homogenization_Rchi()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.behavior.optimization_Rxi_Rchi"><code class="docutils literal notranslate"><span class="pre">optimization_Rxi_Rchi()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.behavior.thermal_eigenstrain"><code class="docutils literal notranslate"><span class="pre">thermal_eigenstrain()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-modules.fem">modules.fem</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#modules.fem.alpha2beta_matrices"><code class="docutils literal notranslate"><span class="pre">alpha2beta_matrices()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.fem.elem2node"><code class="docutils literal notranslate"><span class="pre">elem2node()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.fem.element_quadrature"><code class="docutils literal notranslate"><span class="pre">element_quadrature()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.fem.fullmesh_quadrature"><code class="docutils literal notranslate"><span class="pre">fullmesh_quadrature()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.fem.integration_matrices"><code class="docutils literal notranslate"><span class="pre">integration_matrices()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.fem.local2global_matrices"><code class="docutils literal notranslate"><span class="pre">local2global_matrices()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.fem.shape_function"><code class="docutils literal notranslate"><span class="pre">shape_function()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.fem.shape_function_derivative"><code class="docutils literal notranslate"><span class="pre">shape_function_derivative()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-modules.forces">modules.forces</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#modules.forces.comp_sigma3D_t"><code class="docutils literal notranslate"><span class="pre">comp_sigma3D_t()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.forces.internal_forces"><code class="docutils literal notranslate"><span class="pre">internal_forces()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.forces.sigma3D"><code class="docutils literal notranslate"><span class="pre">sigma3D()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-modules.mesh">modules.mesh</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#modules.mesh.mesh_structure"><code class="docutils literal notranslate"><span class="pre">mesh_structure()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.mesh.meshing_first_layer"><code class="docutils literal notranslate"><span class="pre">meshing_first_layer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.mesh.second_order_discretization"><code class="docutils literal notranslate"><span class="pre">second_order_discretization()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.mesh.uncouple_nodes"><code class="docutils literal notranslate"><span class="pre">uncouple_nodes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.mesh.welding_conditions"><code class="docutils literal notranslate"><span class="pre">welding_conditions()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-modules.plot">modules.plot</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#modules.plot.plotMesh"><code class="docutils literal notranslate"><span class="pre">plotMesh()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.plot.plotpoints"><code class="docutils literal notranslate"><span class="pre">plotpoints()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-modules.solver3D">modules.solver3D</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#modules.solver3D.cauchyTM"><code class="docutils literal notranslate"><span class="pre">cauchyTM()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.solver3D.psi_3dtm"><code class="docutils literal notranslate"><span class="pre">psi_3dtm()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-modules.thermaldata">modules.thermaldata</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#modules.thermaldata.delta_elem_transition_vitreuse"><code class="docutils literal notranslate"><span class="pre">delta_elem_transition_vitreuse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.thermaldata.delta_time"><code class="docutils literal notranslate"><span class="pre">delta_time()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.thermaldata.elem2node"><code class="docutils literal notranslate"><span class="pre">elem2node()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.thermaldata.get_data"><code class="docutils literal notranslate"><span class="pre">get_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.thermaldata.get_data2tamb"><code class="docutils literal notranslate"><span class="pre">get_data2tamb()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.thermaldata.temperature"><code class="docutils literal notranslate"><span class="pre">temperature()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-modules.weld">modules.weld</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#modules.weld.bcs_matrix"><code class="docutils literal notranslate"><span class="pre">bcs_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.weld.weldnode_matrices"><code class="docutils literal notranslate"><span class="pre">weldnode_matrices()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modules.weld.weldwire_matrix"><code class="docutils literal notranslate"><span class="pre">weldwire_matrix()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="qw_structure.html">qw_structure module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qw_additive.html">qw_additive module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ex_energy.html">energy module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ex_wall.html">examples module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">QuadWire</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Modules packages</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/modules.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="modules-packages">
+<h1>Modules packages<a class="headerlink" href="#modules-packages" title="Link to this heading"></a></h1>
+<section id="module-modules.behavior">
+<span id="modules-behavior"></span><h2>modules.behavior<a class="headerlink" href="#module-modules.behavior" title="Link to this heading"></a></h2>
+<p>Module defining the mechanical behaviour of the QuadWire model</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.behavior.assembly_behavior">
+<span class="sig-prename descclassname"><span class="pre">modules.behavior.</span></span><span class="sig-name descname"><span class="pre">assembly_behavior</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/behavior.html#assembly_behavior"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.behavior.assembly_behavior" title="Link to this definition"></a></dt>
+<dd><p>Function that assembles the elemental behaviour matrix into a global matrix (for the entire mesh).
+It has been contracted with the derivation matrix B so that Sigma = K U</p>
+<section id="parameters">
+<h3>Parameters<a class="headerlink" href="#parameters" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>R<span class="classifier">sparse matrix of shape (nInc, nInc)</span></dt><dd><p>Elemental material behavior matrix
+nInc can be from different size : 6 for Rxi, 9 for Rchi, 3 for Rgamma</p>
+</dd>
+<dt>B<span class="classifier">sparse matrix of shape (nInc*nQP, nNodeDOF)</span></dt><dd><p>Derivation matrix : first gradient for xi, second gradient for chi, third for gamma</p>
+</dd>
+<dt>W<span class="classifier">sparse matrix of shape (nQP, nQP)</span></dt><dd><p>Integral weight matrix including local jacobian.</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h3>Returns<a class="headerlink" href="#returns" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>K<span class="classifier">sparse matrix of shape (nDOF, nDOF) nUncDOF = nUncNodes*nNodeDOF</span></dt><dd><p>Assembled behavior matrix.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.behavior.dTfcn">
+<span class="sig-prename descclassname"><span class="pre">modules.behavior.</span></span><span class="sig-name descname"><span class="pre">dTfcn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loadType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nLayers</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/behavior.html#dTfcn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.behavior.dTfcn" title="Link to this definition"></a></dt>
+<dd><p>Function which returns the thermal loading at the quadrature points in the alpha configuration.
+This fonction is used to compute the entire structure undergoing a variation of temperature.</p>
+<section id="id1">
+<h3>Parameters<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>x<span class="classifier">array of size (nQP, nCoord)</span></dt><dd><p>Coordinates of each quadrature points in the global reference (t,n,b)..</p>
+</dd>
+<dt>dT<span class="classifier">float</span></dt><dd><p>Temperature variation</p>
+</dd>
+<dt>loadType<span class="classifier">str</span></dt><dd><p>Type of thermal loading. Options available are “uniform” and “linear”.</p>
+</dd>
+<dt>nLayers<span class="classifier">int</span></dt><dd><p>Number of layers in the printed structure.</p>
+</dd>
+</dl>
+</section>
+<section id="id2">
+<h3>Returns<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>dTalpha array of size (nQP, nParticules)</dt><dd><p>Variation of temperature at each quadrature points for each particule.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.behavior.derivation_chi">
+<span class="sig-prename descclassname"><span class="pre">modules.behavior.</span></span><span class="sig-name descname"><span class="pre">derivation_chi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Hn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Hb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ds</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/behavior.html#derivation_chi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.behavior.derivation_chi" title="Link to this definition"></a></dt>
+<dd><p>Function that returns the second gradient derivation matrix</p>
+<section id="id3">
+<h3>Parameters<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Hn<span class="classifier">float</span></dt><dd><p>Length of the section of the bead in the n direction.</p>
+</dd>
+<dt>Hb<span class="classifier">float</span></dt><dd><p>Length of the section of the bead in the b direction.</p>
+</dd>
+<dt>N<span class="classifier">sparse matrix of shape (nQP, nUncNodes) </span></dt><dd><p>Function of interpolation at the quadrature points : f(Xqp) = N.f(Xunc)</p>
+</dd>
+<dt>Ds<span class="classifier">sparse matrix of shape (nQP, nUncNodes)</span></dt><dd><p>Function derivation in LENGTH coordinates : df_ds(Xqp) = Ds.f(Xunc).</p>
+</dd>
+</dl>
+</section>
+<section id="id4">
+<h3>Returns<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Ctot<span class="classifier">sparse matrix of shape (9*nQP, nNodeDOF)</span></dt><dd><p>Second gradient derivation matrix.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.behavior.derivation_xi">
+<span class="sig-prename descclassname"><span class="pre">modules.behavior.</span></span><span class="sig-name descname"><span class="pre">derivation_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Hn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Hb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ds</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/behavior.html#derivation_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.behavior.derivation_xi" title="Link to this definition"></a></dt>
+<dd><p>Function that returns the first gradient derivation matrix</p>
+<section id="id5">
+<h3>Parameters<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Hn<span class="classifier">float</span></dt><dd><p>Length of the section of the bead in the n direction.</p>
+</dd>
+<dt>Hb<span class="classifier">float</span></dt><dd><p>Length of the section of the bead in the b direction.</p>
+</dd>
+<dt>N<span class="classifier">sparse matrix of shape (nQP, nUncNodes) </span></dt><dd><p>Function of interpolation at the quadrature points : f(Xqp) = N.f(Xunc)</p>
+</dd>
+<dt>Ds<span class="classifier">sparse matrix of shape (nQP, nUncNodes)</span></dt><dd><p>Function derivation in LENGTH coordinates : df_ds(Xqp) = Ds.f(Xunc).</p>
+</dd>
+</dl>
+</section>
+<section id="id6">
+<h3>Returns<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Btot<span class="classifier">sparse matrix of shape (6*nQP, nNodeDOF)</span></dt><dd><p>First gradient derivation matrix.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.behavior.dryingEigenstrain">
+<span class="sig-prename descclassname"><span class="pre">modules.behavior.</span></span><span class="sig-name descname"><span class="pre">dryingEigenstrain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dEps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nQP</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/behavior.html#dryingEigenstrain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.behavior.dryingEigenstrain" title="Link to this definition"></a></dt>
+<dd><p>Function that returns the drying eigenstrain.</p>
+<section id="id7">
+<h3>Parameters<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>dEps<span class="classifier">array of size (nQP, 1)</span></dt><dd><p>Array of the variation of temperature at the quadrature points</p>
+</dd>
+<dt>nQP<span class="classifier">int</span></dt><dd><p>Number of quadrature points.</p>
+</dd>
+</dl>
+</section>
+<section id="id8">
+<h3>Returns<a class="headerlink" href="#id8" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Eps_drying<span class="classifier">sparse matrix of size (nQP*6, 1) </span></dt><dd><p>Drying eigenstrain.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.behavior.energyDensity">
+<span class="sig-prename descclassname"><span class="pre">modules.behavior.</span></span><span class="sig-name descname"><span class="pre">energyDensity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Eps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Eps_th</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Rtot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quadOrder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nInc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/behavior.html#energyDensity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.behavior.energyDensity" title="Link to this definition"></a></dt>
+<dd><p>Function that computes the free energy density at each quadrature points
+nInc gives the variables on which the energy is computed : 9 for first gradient components, 6 for second gradient components, 15 for both</p>
+<section id="id9">
+<h3>Parameters<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Eps<span class="classifier">array of size (nInc*nQP, 1)</span></dt><dd><p>QW generalized strains.
+k*nQP to (k+1)*nQP gives the k^th generalized strain at each quadrature point</p>
+</dd>
+<dt>Eps_th<span class="classifier">array of size (nInc*nQP, 1)</span></dt><dd><p>Thermal eigenstrain.</p>
+</dd>
+<dt>Sigma<span class="classifier">array of size (nInc*nQP, 1)</span></dt><dd><p>QW generalized stresses.
+k*nQP to (k+1)*nQP gives the k^th generalized stress at each quadrature point</p>
+</dd>
+<dt>Rtot<span class="classifier">sparse matrix of shape (nInc*nQP, nInc*nQP)</span></dt><dd><p>Derivation matrix : first gradient for xi, second gradient for chi, third for gamma.</p>
+</dd>
+<dt>quadOrder<span class="classifier">int</span></dt><dd><p>Element quadrature order.</p>
+</dd>
+<dt>nInc<span class="classifier">int</span></dt><dd><p>Number of QW degrees of freedom given for Eps.</p>
+</dd>
+</dl>
+</section>
+<section id="id10">
+<h3>Returns<a class="headerlink" href="#id10" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>nrg<span class="classifier">array of size (nQP,)</span></dt><dd><p>Linear elastic energy density expressed at the quadrature points.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.behavior.homogeneization_Rxi">
+<span class="sig-prename descclassname"><span class="pre">modules.behavior.</span></span><span class="sig-name descname"><span class="pre">homogeneization_Rxi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Hn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Hb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmbda</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/behavior.html#homogeneization_Rxi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.behavior.homogeneization_Rxi" title="Link to this definition"></a></dt>
+<dd><p>Function that returns the elemental material behavior matrix for deformation obtained through an homogeneisation process</p>
+<section id="id11">
+<h3>Parameters<a class="headerlink" href="#id11" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Hn<span class="classifier">float</span></dt><dd><p>Length of the section of the bead in the n direction.</p>
+</dd>
+<dt>Hb<span class="classifier">float</span></dt><dd><p>Length of the section of the bead in the b direction.</p>
+</dd>
+<dt>lmbda<span class="classifier">float</span></dt><dd><p>First Lamé coefficient.</p>
+</dd>
+<dt>mu<span class="classifier">float</span></dt><dd><p>Second Lamé coefficient or shear modulus.</p>
+</dd>
+</dl>
+</section>
+<section id="id12">
+<h3>Returns<a class="headerlink" href="#id12" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Rxi<span class="classifier">sparse matrix of shape (6, 6)</span></dt><dd><p>Elemental material behavior matrix for deformation obtained through an homogeneisation process.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.behavior.homogenization_Rchi">
+<span class="sig-prename descclassname"><span class="pre">modules.behavior.</span></span><span class="sig-name descname"><span class="pre">homogenization_Rchi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Hn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Hb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmbda</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nNodes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/behavior.html#homogenization_Rchi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.behavior.homogenization_Rchi" title="Link to this definition"></a></dt>
+<dd><p>Function that returns the elemental material behavior matrix for curvature obtained through an homogeneisation process</p>
+<section id="id13">
+<h3>Parameters<a class="headerlink" href="#id13" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>L<span class="classifier">int</span></dt><dd><p>Length of the structure in tangential direction t.</p>
+</dd>
+<dt>Hn<span class="classifier">float</span></dt><dd><p>Length of the section of the bead in the n direction.</p>
+</dd>
+<dt>Hb<span class="classifier">float</span></dt><dd><p>Length of the section of the bead in the b direction.</p>
+</dd>
+<dt>lmbda<span class="classifier">float</span></dt><dd><p>First Lamé coefficient.</p>
+</dd>
+<dt>mu<span class="classifier">float</span></dt><dd><p>Second Lamé coefficient or shear modulus.</p>
+</dd>
+<dt>nNodes<span class="classifier">int</span></dt><dd><p>Number of nodes discretising the length L.</p>
+</dd>
+</dl>
+</section>
+<section id="id14">
+<h3>Returns<a class="headerlink" href="#id14" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Rchi<span class="classifier">sparse matrix of shape (9, 9)</span></dt><dd><p>Elemental material behavior matrix for curvature obtained through an homogeneisation process.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.behavior.optimization_Rxi_Rchi">
+<span class="sig-prename descclassname"><span class="pre">modules.behavior.</span></span><span class="sig-name descname"><span class="pre">optimization_Rxi_Rchi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">material</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'PLA'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/behavior.html#optimization_Rxi_Rchi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.behavior.optimization_Rxi_Rchi" title="Link to this definition"></a></dt>
+<dd><p>Function that returns the behavior obtained through the optimization process for PLA</p>
+<section id="id15">
+<h3>Parameters<a class="headerlink" href="#id15" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>material<span class="classifier">str</span></dt><dd><p>Name of the studied material.
+For now “PLA” is the only option.</p>
+</dd>
+</dl>
+</section>
+<section id="id16">
+<h3>Returns<a class="headerlink" href="#id16" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Rchi<span class="classifier">sparse matrix of shape (6, 6)</span></dt><dd><p>Elemental material behavior matrix for deformation obtained through an optimization process.</p>
+</dd>
+<dt>Rchi<span class="classifier">sparse matrix of shape (9, 9)</span></dt><dd><p>Elemental material behavior matrix for curvature obtained through an optimization process.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.behavior.thermal_eigenstrain">
+<span class="sig-prename descclassname"><span class="pre">modules.behavior.</span></span><span class="sig-name descname"><span class="pre">thermal_eigenstrain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dT</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/behavior.html#thermal_eigenstrain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.behavior.thermal_eigenstrain" title="Link to this definition"></a></dt>
+<dd><p>Function that returns the thermal eigenstrain.</p>
+<section id="id17">
+<h3>Parameters<a class="headerlink" href="#id17" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>alpha<span class="classifier">float</span></dt><dd><p>Thermal expansion coefficient.</p>
+</dd>
+<dt>dT<span class="classifier">array of size (nQP, 1)</span></dt><dd><p>Array of the variation of temperature at the quadrature points</p>
+</dd>
+</dl>
+</section>
+<section id="id18">
+<h3>Returns<a class="headerlink" href="#id18" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Eps_thermal<span class="classifier">sparse matrix of size (nQP*6, 1) </span></dt><dd><p>Thermal eigenstrain.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+</section>
+<section id="module-modules.fem">
+<span id="modules-fem"></span><h2>modules.fem<a class="headerlink" href="#module-modules.fem" title="Link to this heading"></a></h2>
+<p>Module defining the finite elements components and the matrices of transitions between different function evaluation locations (node, quadrature points) and coordinate systems (primary, secondary) of the QuadWire program</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.fem.alpha2beta_matrices">
+<span class="sig-prename descclassname"><span class="pre">modules.fem.</span></span><span class="sig-name descname"><span class="pre">alpha2beta_matrices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Hn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Hb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nNodesTot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nUncNodes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/fem.html#alpha2beta_matrices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.fem.alpha2beta_matrices" title="Link to this definition"></a></dt>
+<dd><p>Function that returns the matrices that enables the primary to secondary transfer for vectors variables</p>
+<section id="id19">
+<h3>Parameters<a class="headerlink" href="#id19" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Hn<span class="classifier">int</span></dt><dd><p>Characteristic length of the cord section in n direction.</p>
+</dd>
+<dt>Hb<span class="classifier">int</span></dt><dd><p>Characteristic length of the cord section in b direction.</p>
+</dd>
+<dt>nNodesTot<span class="classifier">int</span></dt><dd><p>Number of coupled nodes in the mesh</p>
+</dd>
+<dt>nUncNodes<span class="classifier">int</span></dt><dd><p>Number uncoupled nodes in the mesh.</p>
+</dd>
+<dt>TDim<span class="classifier">bool </span></dt><dd><p>Bool that indicates whether or not the dimensions have been taken into account in T, the alpha to beta transition matrix
+False for the optimization induced behavior - T without Hn Hb
+True for the homogeneization induced behavior - T with Hn Hb</p>
+</dd>
+</dl>
+</section>
+<section id="id20">
+<h3>Returns<a class="headerlink" href="#id20" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Tv<span class="classifier">sparse matrix of shape (nNodeDOF, nNodeDOF) = (12, 12)</span></dt><dd><p>Transition matrix between the alpha and beta coordinate systems for vectorized variables 
+u_beta = vec(U_beta) = Tv.vec(u_alpha)</p>
+</dd>
+<dt>Tc<span class="classifier">sparse matrix of shape (nNodeDOF*nNodesTot, nNodeDOF*nNodesTot)</span></dt><dd><p>Transition matrix between the alpha and beta coordinate systems for coupled vecotrs</p>
+</dd>
+<dt>Ta<span class="classifier">sparse matrix of shape (nNodeDOF*nUncNodes, nNodeDOF*nUncNodes)</span></dt><dd><p>Transition matrix between the alpha and beta coordinate systems for uncoupled vectors</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.fem.elem2node">
+<span class="sig-prename descclassname"><span class="pre">modules.fem.</span></span><span class="sig-name descname"><span class="pre">elem2node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nNodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nLayers</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/fem.html#elem2node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.fem.elem2node" title="Link to this definition"></a></dt>
+<dd><p>Function that returns the element to node transition matrix.</p>
+<section id="id21">
+<h3>Parameters<a class="headerlink" href="#id21" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>nNodes<span class="classifier">int</span></dt><dd><p>Number of nodes per layer.</p>
+</dd>
+<dt>nLayers<span class="classifier">int</span></dt><dd><p>Number of layer in the structure.</p>
+</dd>
+</dl>
+</section>
+<section id="id22">
+<h3>Returns<a class="headerlink" href="#id22" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>elem2node<span class="classifier">sparse matrix of shape (nElemTOT, nNodesTOT)</span></dt><dd><p>Transition matrix between the element and the nodes</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.fem.element_quadrature">
+<span class="sig-prename descclassname"><span class="pre">modules.fem.</span></span><span class="sig-name descname"><span class="pre">element_quadrature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quadOrder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/fem.html#element_quadrature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.fem.element_quadrature" title="Link to this definition"></a></dt>
+<dd><p>Function that returns an element quadrature</p>
+<section id="id23">
+<h3>Parameters<a class="headerlink" href="#id23" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>quadOrder<span class="classifier">int</span></dt><dd><p>Element quadrature order.</p>
+</dd>
+</dl>
+</section>
+<section id="id24">
+<h3>Returns<a class="headerlink" href="#id24" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>xiQ<span class="classifier">array of size (quadOrder, )</span></dt><dd><p>Coordinates of the quadrature point reference coordinates.</p>
+</dd>
+<dt>wQ<span class="classifier">array of size (quadOrder, )</span></dt><dd><p>Quadrature weights.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.fem.fullmesh_quadrature">
+<span class="sig-prename descclassname"><span class="pre">modules.fem.</span></span><span class="sig-name descname"><span class="pre">fullmesh_quadrature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quadOrder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nElemsTot</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/fem.html#fullmesh_quadrature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.fem.fullmesh_quadrature" title="Link to this definition"></a></dt>
+<dd><p>Function that returns the full mesh quadrature</p>
+<section id="id25">
+<h3>Parameters<a class="headerlink" href="#id25" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>quadOrder<span class="classifier">int</span></dt><dd><p>Element quadrature order.</p>
+</dd>
+<dt>nElemsTot<span class="classifier">int</span></dt><dd><p>Numbrer of element in the whole structure.</p>
+</dd>
+</dl>
+</section>
+<section id="id26">
+<h3>Returns<a class="headerlink" href="#id26" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>XIQ<span class="classifier">array of size (quadOrder*(nNodes-1)*nLayers, 1) or (nQP, 1)</span></dt><dd><p>Coordinates of the quadrature points.</p>
+</dd>
+<dt>WQ<span class="classifier">array of size (quadOrder*(nNodes-1)*nLayers, 1) or (nQP, 1)</span></dt><dd><p>Weight of the quadrature points.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.fem.integration_matrices">
+<span class="sig-prename descclassname"><span class="pre">modules.fem.</span></span><span class="sig-name descname"><span class="pre">integration_matrices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Elems</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elemOrder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quadOrder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/fem.html#integration_matrices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.fem.integration_matrices" title="Link to this definition"></a></dt>
+<dd><p>Return some usefull sparse matrix that will be use in the FEM solver.
+Reminder : nQP = quadOrder*(nNodes-1)*nLayers = quadOrder * nElemTot</p>
+<blockquote>
+<div><p>nUncNodes = 2*(nNodes -2)*nLayers + nLayers*2</p>
+</div></blockquote>
+<section id="id27">
+<h3>Parameters<a class="headerlink" href="#id27" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>X<span class="classifier">array of size (nNodes*nLayers, nCoord)</span></dt><dd><p>Coordinates of each nodes in the global reference (t,n,b).</p>
+</dd>
+<dt>Elems<span class="classifier">array of size ((nNodes - 1)*nLayers, elemOrder +1 ) or (nElemTot, elemOrder +1)</span></dt><dd><p>Index of the pair of nodes forming an element.</p>
+</dd>
+<dt>elemOrder<span class="classifier">int</span></dt><dd><p>Element order : number of nodes that forms an element 
+Options are 1 for two-nodes P1 element and 2 for three-nodes P2 element</p>
+</dd>
+<dt>quadOrder<span class="classifier">int</span></dt><dd><p>Element quadrature order.</p>
+</dd>
+</dl>
+</section>
+<section id="id28">
+<h3>Returns<a class="headerlink" href="#id28" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>N<span class="classifier">sparse matrix of shape (nQP, nUncNodes) </span></dt><dd><p>Function of interpolation at the quadrature points : f(Xqp) = N.f(Xunc)</p>
+</dd>
+<dt>Dxi<span class="classifier">sparse matrix of shape (nQP, nUncNodes)</span></dt><dd><p>Function of derivation in REFERENCE coordinates : df_dxi(Xqp) = Dxi.f(Xunc) .</p>
+</dd>
+<dt>Ds<span class="classifier">sparse matrix of shape (nQP, nUncNodes)</span></dt><dd><p>Function derivation in LENGTH coordinates : df_ds(Xqp) = Ds.f(Xunc).</p>
+</dd>
+<dt>J<span class="classifier">array of size (nQP,)</span></dt><dd><p>Jacobian = norm(dX_dxi)</p>
+</dd>
+<dt>W<span class="classifier">sparse matrix of shape (nQP, nQP)</span></dt><dd><p>Integral weight matrix including local jacobian.</p>
+</dd>
+<dt>O<span class="classifier">sparse matrix of shape (nQP, nUncNodes)</span></dt><dd><p>Null matrix.</p>
+</dd>
+<dt>qp2elem<span class="classifier">sparse matrix of shape (nElemTOT, nQP)</span></dt><dd><p>Transition matrix between the quadrature points and the elements
+f(elem) = qp2elem &#64; f(x_qp)</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.fem.local2global_matrices">
+<span class="sig-prename descclassname"><span class="pre">modules.fem.</span></span><span class="sig-name descname"><span class="pre">local2global_matrices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Xunc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncElems</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elemOrder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/fem.html#local2global_matrices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.fem.local2global_matrices" title="Link to this definition"></a></dt>
+<dd><p>Function which returns the evaluation of the base vectors at each decoupled node
+and the matrix for passing from local to global coordinates</p>
+<section id="id29">
+<h3>Parameters<a class="headerlink" href="#id29" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Xunc<span class="classifier">array of size (nUncNodes, nCoord)</span></dt><dd><p>Coordinates of each uncoupled nodes in the global reference (t,n,b).</p>
+</dd>
+<dt>uncElems<span class="classifier">array of size (nElemTot, elemOrder + 1)</span></dt><dd><p>Index of the pair of nodes forming an uncoupled element.</p>
+</dd>
+<dt>elemOrder<span class="classifier">int, optional</span></dt><dd><p>Element order in the FEM discretization. 
+Options are 1 for two-nodes P1 element and 2 for three-nodes P2 element</p>
+</dd>
+</dl>
+</section>
+<section id="id30">
+<h3>Returns<a class="headerlink" href="#id30" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>t<span class="classifier">array of size (nUncNodes, nCoord)</span></dt><dd><p>Coordinates of the local tangent vector evaluated at each uncoupled node.</p>
+</dd>
+<dt>n<span class="classifier">array of size (nUncNodes, nCoord)</span></dt><dd><p>Coordinates of the local horizontal normal vector evaluated at each uncoupled node.</p>
+</dd>
+<dt>b<span class="classifier">array of size (nUncNodes, nCoord)</span></dt><dd><p>Coordinates of the local vertical normal vector evaluated at each uncoupled node.</p>
+</dd>
+<dt>P<span class="classifier">sparse matrix of shape (nNodeDOF*nUncNodes, nNodeDOF*nUncNodes) = (nDOF, nDOF)</span></dt><dd><p>Matrix that transfers variables expressed in a local coordinates to global coordinates</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.fem.shape_function">
+<span class="sig-prename descclassname"><span class="pre">modules.fem.</span></span><span class="sig-name descname"><span class="pre">shape_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elemOrder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/fem.html#shape_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.fem.shape_function" title="Link to this definition"></a></dt>
+<dd><p>Function that returns the shape fonction (or interpolation fonction)
+f(Xqp) = N.f(Xunc)</p>
+<section id="id31">
+<h3>Parameters<a class="headerlink" href="#id31" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>xi<span class="classifier">array of size ((nNodes-1)*nLayers, 1)</span></dt><dd><p>Coordinates of the quadrature points.</p>
+</dd>
+<dt>elemOrder<span class="classifier">int</span></dt><dd><p>Element order : number of nodes that forms an element 
+Options are 1 for two-nodes P1 element and 2 for three-nodes P2 element</p>
+</dd>
+</dl>
+</section>
+<section id="id32">
+<h3>Returns<a class="headerlink" href="#id32" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>array of size (nQP, nNodesByElem, 1)</dt><dd><p>Shape function.</p>
+</dd>
+</dl>
+<p>NB : nQP = quadOrder*(nNodes-1)*nLayers</p>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.fem.shape_function_derivative">
+<span class="sig-prename descclassname"><span class="pre">modules.fem.</span></span><span class="sig-name descname"><span class="pre">shape_function_derivative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elemOrder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/fem.html#shape_function_derivative"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.fem.shape_function_derivative" title="Link to this definition"></a></dt>
+<dd><p>Derivation of the shape function d_Shape/d_xi in the reference coordinates 
+df_dxi(Xqp) = Dxi.f(Xunc)</p>
+<section id="id33">
+<h3>Parameters<a class="headerlink" href="#id33" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>xi<span class="classifier">array of size ((nNodes-1)*nLayers, 1)</span></dt><dd><p>Coordinates of the quadrature points.</p>
+</dd>
+<dt>elemOrder<span class="classifier">int, optional</span></dt><dd><p>Element order : number of nodes that forms an element 
+Options are 1 for two-nodes P1 element and 2 for three-nodes P2 element</p>
+</dd>
+</dl>
+</section>
+<section id="id34">
+<h3>Returns<a class="headerlink" href="#id34" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>array of size (nQP, nNodesByElem)</dt><dd><p>Derivation of the shape function.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+</section>
+<section id="module-modules.forces">
+<span id="modules-forces"></span><h2>modules.forces<a class="headerlink" href="#module-modules.forces" title="Link to this heading"></a></h2>
+<p>Module containing functions for tracing internal forces and reconstructing a cauchy stress tensor</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.forces.comp_sigma3D_t">
+<span class="sig-prename descclassname"><span class="pre">modules.forces.</span></span><span class="sig-name descname"><span class="pre">comp_sigma3D_t</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Hn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Hb</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/forces.html#comp_sigma3D_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.forces.comp_sigma3D_t" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.forces.internal_forces">
+<span class="sig-prename descclassname"><span class="pre">modules.forces.</span></span><span class="sig-name descname"><span class="pre">internal_forces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Hn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Hb</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/forces.html#internal_forces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.forces.internal_forces" title="Link to this definition"></a></dt>
+<dd><p>Function that returns the QuadWire internal forces</p>
+<section id="id35">
+<h3>Parameters<a class="headerlink" href="#id35" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Sigma<span class="classifier">array of size (nInc*nQP, 1)</span></dt><dd><p>QW generalized stresses.
+k*nQP to (k+1)*nQP gives the k^th generalized stress at each quadrature points.</p>
+</dd>
+<dt>Hn<span class="classifier">float</span></dt><dd><p>Length of the section of the bead in the n direction.</p>
+</dd>
+<dt>Hb<span class="classifier">float</span></dt><dd><p>Length of the section of the bead in the b direction.</p>
+</dd>
+</dl>
+</section>
+<section id="id36">
+<h3>Returns<a class="headerlink" href="#id36" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>f1<span class="classifier">array of size (nCoord, nQP, 1)</span></dt><dd><p>Internal force per length unit of particule 1 expressed at the quadrature points.</p>
+</dd>
+<dt>f2<span class="classifier">array of size (nCoord, nQP, 1)</span></dt><dd><p>Internal force per length unit of particule 2 expressed at the quadrature points.</p>
+</dd>
+<dt>f3<span class="classifier">array of size (nCoord, nQP, 1)</span></dt><dd><p>Internal force per length unit of particule 3 expressed at the quadrature points.</p>
+</dd>
+<dt>f4<span class="classifier">array of size (nCoord, nQP, 1)</span></dt><dd><p>Internal force per length unit of particule 4 expressed at the quadrature points.</p>
+</dd>
+<dt>F1<span class="classifier">array of size (nCoord, nQP, 1)</span></dt><dd><p>Internal force of particule 1 expressed at the quadrature points.</p>
+</dd>
+<dt>F2<span class="classifier">array of size (nCoord, nQP, 1)</span></dt><dd><p>Internal force of particule 2 expressed at the quadrature points.</p>
+</dd>
+<dt>F3<span class="classifier">array of size (nCoord, nQP, 1)</span></dt><dd><p>Internal force of particule 3 expressed at the quadrature points.</p>
+</dd>
+<dt>F4<span class="classifier">array of size (nCoord, nQP, 1)</span></dt><dd><p>Internal force of particule 4 expressed at the quadrature points.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.forces.sigma3D">
+<span class="sig-prename descclassname"><span class="pre">modules.forces.</span></span><span class="sig-name descname"><span class="pre">sigma3D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Hn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Hb</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/forces.html#sigma3D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.forces.sigma3D" title="Link to this definition"></a></dt>
+<dd><p>Function that reconstruct the 3D cauchy stress tensor</p>
+<section id="id37">
+<h3>Parameters<a class="headerlink" href="#id37" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Sigma<span class="classifier">array of size (nInc*nQP, 1)</span></dt><dd><p>QW generalized stresses.
+k*nQP to (k+1)*nQP gives the k^th generalized stress at each quadrature points.</p>
+</dd>
+<dt>Hn<span class="classifier">float</span></dt><dd><p>Length of the section of the bead in the n direction.</p>
+</dd>
+<dt>Hb<span class="classifier">float</span></dt><dd><p>Length of the section of the bead in the b direction.</p>
+</dd>
+</dl>
+</section>
+<section id="id38">
+<h3>Returns<a class="headerlink" href="#id38" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Sigma3D_tt<span class="classifier">TYPE</span></dt><dd><p>DESCRIPTION.</p>
+</dd>
+<dt>Sigma3D_tn<span class="classifier">TYPE</span></dt><dd><p>DESCRIPTION.</p>
+</dd>
+<dt>Sigma3D_tb<span class="classifier">TYPE</span></dt><dd><p>DESCRIPTION.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+</section>
+<section id="module-modules.mesh">
+<span id="modules-mesh"></span><h2>modules.mesh<a class="headerlink" href="#module-modules.mesh" title="Link to this heading"></a></h2>
+<p>Module containing the discretisation and meshing functions of the QuadWire program</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.mesh.mesh_structure">
+<span class="sig-prename descclassname"><span class="pre">modules.mesh.</span></span><span class="sig-name descname"><span class="pre">mesh_structure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Elems</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nLayers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nNodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buildDirection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">H</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/mesh.html#mesh_structure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.mesh.mesh_structure" title="Link to this definition"></a></dt>
+<dd><p>Function that replicates the mesh of the first layer to generate the mesh of the whole structure</p>
+<section id="id39">
+<h3>Parameters<a class="headerlink" href="#id39" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>X<span class="classifier">array of size (nNodes, 3)</span></dt><dd><p>Coordinates of each nodes in the global reference (t,n,b).</p>
+</dd>
+<dt>Elems<span class="classifier">array of size (nNodes - 1, 2)</span></dt><dd><p>Index of the pair of nodes forming an element.</p>
+</dd>
+<dt>U0<span class="classifier">array of size (3, 4, nNodes)</span></dt><dd><p>Boundary conditions for particles attached to each node : NaN when the particule has no imposed bc. 
+Particules are indexed as {TL,TR,BL,BR}.</p>
+</dd>
+<dt>nLayers<span class="classifier">int</span></dt><dd><p>Number of layers of the structure in the build dirction.</p>
+</dd>
+<dt>nNodes<span class="classifier">int</span></dt><dd><p>Number of nodes discretising the length L.</p>
+</dd>
+<dt>buildDirection<span class="classifier">str</span></dt><dd><p>Build direction of the structure “v” for a wall structure and “h” for a carpet structure.</p>
+</dd>
+<dt>H<span class="classifier">float</span></dt><dd><p>Width of the section of the bead in the build direction. Hb for option “v” and Hn for option “h”.</p>
+</dd>
+</dl>
+</section>
+<section id="id40">
+<h3>Returns<a class="headerlink" href="#id40" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>X<span class="classifier">array of size (nNodes*nLayers, 3)</span></dt><dd><p>Coordinates of each nodes in the global reference (t,n,b).</p>
+</dd>
+<dt>Elems<span class="classifier">array of size ((nNodes - 1)*nLayers, 2)</span></dt><dd><p>Index of the pair of nodes forming an element.</p>
+</dd>
+<dt>U0<span class="classifier">array of size (3, 4, nNodes*nLayers)</span></dt><dd><p>Boundary conditions for particles attached to each node : NaN when the particule has no imposed bc. Particules are indexed as {TL,TR,BL,BR}.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.mesh.meshing_first_layer">
+<span class="sig-prename descclassname"><span class="pre">modules.mesh.</span></span><span class="sig-name descname"><span class="pre">meshing_first_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nNodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meshType</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meshRefined</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/mesh.html#meshing_first_layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.mesh.meshing_first_layer" title="Link to this definition"></a></dt>
+<dd><p>Function that meshes the first layer of the structure.</p>
+<section id="id41">
+<h3>Parameters<a class="headerlink" href="#id41" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>L<span class="classifier">int</span></dt><dd><p>Length of the structure in tangential direction t.</p>
+</dd>
+<dt>nNodes<span class="classifier">int</span></dt><dd><p>Number of nodes discretising the length L.</p>
+</dd>
+<dt>meshType<span class="classifier">str, optional</span></dt><dd><p>Geometry of the first layer. Options available are “linear”, “circular” or “sinus”. 
+The default is “linear”.</p>
+</dd>
+<dt>meshRefined<span class="classifier">bool, optional</span></dt><dd><p>Option available for the a “linear” mesh : refinement of the mesh close to the edges of the structure.
+The default is False.</p>
+</dd>
+</dl>
+</section>
+<section id="id42">
+<h3>Returns<a class="headerlink" href="#id42" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>X<span class="classifier">array of size (nNodes, nCoord)</span></dt><dd><p>Coordinates of each nodes in the global reference (x1, x2, x3).</p>
+</dd>
+<dt>Elems<span class="classifier">array of size (nNodes - 1, 2)</span></dt><dd><p>Index of the pair of nodes forming an element.</p>
+</dd>
+<dt>U0<span class="classifier">array of size (nCoord, nParticule, nNodes)</span></dt><dd><p>Boundary conditions for particles attached to each node : NaN when the particule has no imposed bc. 
+Particules are indexed as {TL,TR,BL,BR}.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.mesh.second_order_discretization">
+<span class="sig-prename descclassname"><span class="pre">modules.mesh.</span></span><span class="sig-name descname"><span class="pre">second_order_discretization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Elems</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/mesh.html#second_order_discretization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.mesh.second_order_discretization" title="Link to this definition"></a></dt>
+<dd><p>Function that updates the mesh and discretisation in the case of second order element in the FEM definition
+Three-nodes element</p>
+<section id="id43">
+<h3>Parameters<a class="headerlink" href="#id43" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>X<span class="classifier">array of size (nNodes*nLayers, nCoord)</span></dt><dd><p>Coordinates of each nodes in the global reference (t,n,b).</p>
+</dd>
+<dt>Elems<span class="classifier">array of size ((nNodes - 1)*nLayers, 2)</span></dt><dd><p>Index of the pair of nodes forming an element.</p>
+</dd>
+<dt>U0<span class="classifier">array of size (3, 4, nNodes*nLayers)</span></dt><dd><p>Boundary conditions for particles attached to each node : NaN when the particule has no imposed bc. Particules are indexed as {TL,TR,BL,BR}.</p>
+</dd>
+</dl>
+</section>
+<section id="id44">
+<h3>Returns<a class="headerlink" href="#id44" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>X<span class="classifier">array of size ((2*nNodes-1)*nLayers, nCoord)</span></dt><dd><p>Coordinates of each nodes in the global reference (t,n,b).</p>
+</dd>
+<dt>Elems<span class="classifier">array of size ((nNodes - 1)*nLayers, 3)</span></dt><dd><p>Index of the pair of nodes forming an element.</p>
+</dd>
+<dt>U0<span class="classifier">array of size (3, 4, (2*nNodes-1)*nLayers)</span></dt><dd><p>Boundary conditions for particles attached to each node : NaN when the particule has no imposed bc. Particules are indexed as {TL,TR,BL,BR}.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.mesh.uncouple_nodes">
+<span class="sig-prename descclassname"><span class="pre">modules.mesh.</span></span><span class="sig-name descname"><span class="pre">uncouple_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Elems</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/mesh.html#uncouple_nodes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.mesh.uncouple_nodes" title="Link to this definition"></a></dt>
+<dd><p>Function that transforms the “coupled” vectors (X, Elems) in their uncoupled version
+Elements were numbered as such V = [[0, 1], [1, 2], …] and now Vunc = [[0, 1], [2, 3], …]</p>
+<section id="id45">
+<h3>Parameters<a class="headerlink" href="#id45" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>X<span class="classifier">array of size (nNodes*nLayers, nCoord)</span></dt><dd><p>Coordinates of each nodes in the global reference (t,n,b).</p>
+</dd>
+<dt>Elems<span class="classifier">array of size ((nNodes - 1)*nLayers, elemOrder + 1)</span></dt><dd><p>Index of the pair of nodes forming an element.</p>
+</dd>
+</dl>
+</section>
+<section id="id46">
+<h3>Returns<a class="headerlink" href="#id46" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Xunc<span class="classifier">array of size ((elemOrder+1)*(nNodes - 2 + 1)*nLayers, nCoord) or (nUncNodes, nCoord)</span></dt><dd><p>Coordinates of each uncoupled nodes in the global reference (t,n,b)..</p>
+</dd>
+<dt>uncElems<span class="classifier">array of size ((nNodes - 1)*nLayers, elemOrder + 1) or (nElemTot, elemOrder + 1)</span></dt><dd><p>Index of the pair of nodes forming an uncoupled element.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.mesh.welding_conditions">
+<span class="sig-prename descclassname"><span class="pre">modules.mesh.</span></span><span class="sig-name descname"><span class="pre">welding_conditions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Elems</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nLayers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nNodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buildDirection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">H</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/mesh.html#welding_conditions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.mesh.welding_conditions" title="Link to this definition"></a></dt>
+<dd><p>Function that returns a matrix of wire welding conditions of the structure</p>
+<section id="id47">
+<h3>Parameters<a class="headerlink" href="#id47" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>X<span class="classifier">array of size (nNodes, 3)</span></dt><dd><p>Coordinates of each nodes in the global reference (t,n,b).</p>
+</dd>
+<dt>Elems<span class="classifier">array of size (nNodes - 1, 2)</span></dt><dd><p>Index of the pair of nodes forming an element.</p>
+</dd>
+<dt>U0<span class="classifier">array of size (3, 4, nNodes)</span></dt><dd><p>Boundary conditions for particles attached to each node : NaN when the particule has no imposed bc. 
+Particules are indexed as {TL,TR,BL,BR}.</p>
+</dd>
+<dt>nLayers<span class="classifier">int</span></dt><dd><p>Number of layers of the structure in the build dirction.</p>
+</dd>
+<dt>nNodes<span class="classifier">int</span></dt><dd><p>Number of nodes discretising the length L.</p>
+</dd>
+<dt>buildDirection<span class="classifier">str</span></dt><dd><p>Build direction of the structure “v” for a wall structure and “h” for a carpet structure.</p>
+</dd>
+<dt>H<span class="classifier">float</span></dt><dd><p>Width of the section of the bead in the build direction. Hb for option “v” and Hn for option “h”.</p>
+</dd>
+</dl>
+</section>
+<section id="id48">
+<h3>Returns<a class="headerlink" href="#id48" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>weldDOF<span class="classifier">array of size (nNodes*(nLayers-1)*2, 4) - number of layer interface * two welding conditions</span></dt><dd><p>Array listing the welding conditions between the wires 
+The k^th welding condition is given by : weldDOF[k] = [indexNode1, node1Particule, indexNode2, node2Particule] which means that the the node1Particule chosen is welded to the node2Particule
+There are nInterface*nNodes*2 welding conditions in between wires</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+</section>
+<section id="module-modules.plot">
+<span id="modules-plot"></span><h2>modules.plot<a class="headerlink" href="#module-modules.plot" title="Link to this heading"></a></h2>
+<p>Plot function for the QuadWire model</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.plot.plotMesh">
+<span class="sig-prename descclassname"><span class="pre">modules.plot.</span></span><span class="sig-name descname"><span class="pre">plotMesh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elems</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edgecolor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'white'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clrfun</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/plot.html#plotMesh"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.plot.plotMesh" title="Link to this definition"></a></dt>
+<dd><p>Mesh display function using parallelepiped elements with triangular facets. 
+The colormap can either display quantities expressed at the particules or expressed at the elements</p>
+<section id="id49">
+<h3>Parameters<a class="headerlink" href="#id49" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>axis<span class="classifier">matplotlib axes 3D </span></dt><dd><p>axis of the matplotlib 3D plot.</p>
+</dd>
+<dt>L<span class="classifier">int </span></dt><dd><p>Length of the wire in mm.</p>
+</dd>
+<dt>x<span class="classifier">array of size (nNodesTOT, nCoord, nParticules)</span></dt><dd><p>Coordinates of each particule of each node of the mesh.</p>
+</dd>
+<dt>elems<span class="classifier">array of size ((nNodes - 1)*nLayers, elemOrder +1 ) or (nElemTot, elemOrder +1)</span></dt><dd><p>Index of the pair of nodes forming an element.</p>
+</dd>
+<dt>edgecolor<span class="classifier">str, optional</span></dt><dd><p>Color of the edges of the triangles. The default is ‘black’.</p>
+</dd>
+<dt>color<span class="classifier">str, optional</span></dt><dd><p>Color of the edges of the triangles. The default is ‘white’.</p>
+</dd>
+<dt>clrfun<span class="classifier">array, optional</span></dt><dd><p>Array giving the value that will be used for the colormap. 
+It can either be expressed at each element or at each particule.
+The default is [].</p>
+</dd>
+<dt>outer<span class="classifier">bool, optional</span></dt><dd><p>DESCRIPTION. The default is True.</p>
+</dd>
+</dl>
+</section>
+<section id="id50">
+<h3>Returns<a class="headerlink" href="#id50" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>srf<span class="classifier">matplotlib 3D polyline</span></dt><dd><p>Plotted surface.</p>
+</dd>
+<dt>tri<span class="classifier">array of shape (nElemsTot*12, 3)</span></dt><dd><p>Colormap value at each node for each triangle (12 per element)</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.plot.plotpoints">
+<span class="sig-prename descclassname"><span class="pre">modules.plot.</span></span><span class="sig-name descname"><span class="pre">plotpoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/plot.html#plotpoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.plot.plotpoints" title="Link to this definition"></a></dt>
+<dd><p>Displays the material points of a geometry in a matplotlib 3D plot</p>
+<section id="id51">
+<h3>Parameters<a class="headerlink" href="#id51" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>X<span class="classifier">array of size (nNodes, nCoord)</span></dt><dd><p>Coordinates of each nodes in the global reference (x1, x2, x3).</p>
+</dd>
+</dl>
+</section>
+<section id="id52">
+<h3>Returns<a class="headerlink" href="#id52" title="Link to this heading"></a></h3>
+<p>None.</p>
+</section>
+</dd></dl>
+
+</section>
+<section id="module-modules.solver3D">
+<span id="modules-solver3d"></span><h2>modules.solver3D<a class="headerlink" href="#module-modules.solver3D" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.solver3D.cauchyTM">
+<span class="sig-prename descclassname"><span class="pre">modules.solver3D.</span></span><span class="sig-name descname"><span class="pre">cauchyTM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Hn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Hb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nNodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nLayers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meshType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thermalLoading</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/solver3D.html#cauchyTM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.solver3D.cauchyTM" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.solver3D.psi_3dtm">
+<span class="sig-prename descclassname"><span class="pre">modules.solver3D.</span></span><span class="sig-name descname"><span class="pre">psi_3dtm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">U_dof</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nQP</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dTmoy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xiQ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elemQ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Hn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Hb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nNodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nLayers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">circ</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/solver3D.html#psi_3dtm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.solver3D.psi_3dtm" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-modules.thermaldata">
+<span id="modules-thermaldata"></span><h2>modules.thermaldata<a class="headerlink" href="#module-modules.thermaldata" title="Link to this heading"></a></h2>
+<p>Module for importing thermal simulation resulTsubstrate from the fast method to the QuadWire finite element kernel</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.thermaldata.delta_elem_transition_vitreuse">
+<span class="sig-prename descclassname"><span class="pre">modules.thermaldata.</span></span><span class="sig-name descname"><span class="pre">delta_elem_transition_vitreuse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tbuild</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/thermaldata.html#delta_elem_transition_vitreuse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.thermaldata.delta_elem_transition_vitreuse" title="Link to this definition"></a></dt>
+<dd><p>Function used to differentiate a temperature matrix with respect to time. 
+nPointsTOT represents the number of calculation points.
+It can either be nNodesTOT if it’s the nodal temperature matrix or nElemsTOT if it’s the element temperature matrix.
+This function is used for material that undergo a glass transition :</p>
+<blockquote>
+<div><p>T &gt; Tg : the material is liquid therefore the thermal eigenstrain is nul : dT = 0
+T &lt; Tg : the material is solid</p>
+</div></blockquote>
+<section id="id53">
+<h3>Parameters<a class="headerlink" href="#id53" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>T<span class="classifier">array of size (nTimeStep, nPointsTOT)</span></dt><dd><p>Evolution of the points temperature throughout the simulation.
+T[tk] = points temperature at time step tk
+T[:, i] = temperature of the ith points throughout the simulation.</p>
+</dd>
+<dt>Tbuild<span class="classifier">float, optional</span></dt><dd><p>Temperature of deposition of the material during the process.
+For a FDM (PLA) process its = 353.15, for a metal process its = 2463.060825.</p>
+</dd>
+<dt>Tg<span class="classifier">float, optional</span></dt><dd><p>Glass transition of the material. 
+The default value is for PLA 328.15.</p>
+</dd>
+</dl>
+</section>
+<section id="id54">
+<h3>Returns<a class="headerlink" href="#id54" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>dT<span class="classifier">array of size (nTimeStep - 1, nPointsTOT)</span></dt><dd><p>Time differential of the points temperature throughout the simulation.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.thermaldata.delta_time">
+<span class="sig-prename descclassname"><span class="pre">modules.thermaldata.</span></span><span class="sig-name descname"><span class="pre">delta_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tbuild</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/thermaldata.html#delta_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.thermaldata.delta_time" title="Link to this definition"></a></dt>
+<dd><p>Function used to differentiate a temperature matrix with respect to time. 
+nPointsTOT represents the number of calculation points.
+It can either be nNodesTOT if it’s the nodal temperature matrix or nElemsTOT if it’s the element temperature matrix.</p>
+<section id="id55">
+<h3>Parameters<a class="headerlink" href="#id55" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>T<span class="classifier">array of size (nTimeStep, nPointsTOT)</span></dt><dd><p>Evolution of the points temperature throughout the simulation.
+T[tk] = points temperature at time step tk
+T[:, i] = temperature of the ith points throughout the simulation.</p>
+</dd>
+<dt>Tbuild<span class="classifier">float, optional</span></dt><dd><p>Temperature of deposition of the material during the process.
+For a FDM (PLA) process its = 353.15, for a metal process its = 2463.060825.</p>
+</dd>
+</dl>
+</section>
+<section id="id56">
+<h3>Returns<a class="headerlink" href="#id56" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>dT<span class="classifier">array of size (nTimeStep - 1, nPointsTOT)</span></dt><dd><p>Time differential of the points temperature throughout the simulation.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.thermaldata.elem2node">
+<span class="sig-prename descclassname"><span class="pre">modules.thermaldata.</span></span><span class="sig-name descname"><span class="pre">elem2node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Telem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nElems</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nLayers</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/thermaldata.html#elem2node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.thermaldata.elem2node" title="Link to this definition"></a></dt>
+<dd><p>Function used to pass from the temperature at the elements to the temperature at the nodes by linear interpolation.</p>
+<section id="id57">
+<h3>Parameters<a class="headerlink" href="#id57" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Telem<span class="classifier">array of size (nTimeStep, nElemsTOT)</span></dt><dd><p>Evolution of the elements temperature throughout the simulation.</p>
+</dd>
+<dt>nElems<span class="classifier">int</span></dt><dd><p>Number of elements per layer.
+nElems = nNodes - 1</p>
+</dd>
+<dt>nLayers<span class="classifier">int</span></dt><dd><p>Number of layer in the structure.</p>
+</dd>
+</dl>
+</section>
+<section id="id58">
+<h3>Returns<a class="headerlink" href="#id58" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Tnode<span class="classifier">array of size (nTimeStep, nNodesTOT)</span></dt><dd><p>Evolution of the nodes temperature throughout the simulation.
+Tnode[tk] = node temperature at time step tk
+Tnode[:, i] = temperature of the ith node throughout the simulation</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.thermaldata.get_data">
+<span class="sig-prename descclassname"><span class="pre">modules.thermaldata.</span></span><span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataFiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nElems</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nLayers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tbuild</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tsubstrate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">323.15</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/thermaldata.html#get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.thermaldata.get_data" title="Link to this definition"></a></dt>
+<dd><p>Function for importing the results files of the rapid thermal simulation model in the form of a numpy array.
+The temperature of the elements at the time steps where thy don’t physically exist is set to the build temperature.
+Parameters
+———-
+dataFiles : list</p>
+<blockquote>
+<div><p>Number of time step in the thermal simulation.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>nElems<span class="classifier">int</span></dt><dd><p>Number of elements per layer.
+nElems = nNodes - 1</p>
+</dd>
+<dt>nLayers<span class="classifier">int</span></dt><dd><p>Number of layer in the structure.</p>
+</dd>
+<dt>Tbuild<span class="classifier">float, optional</span></dt><dd><p>Temperature of deposition of the material during the process.
+For a FDM (PLA) process its = 353.15, for a metal process its = 2463.060825.</p>
+</dd>
+<dt>Tsubstrate<span class="classifier">int, optional</span></dt><dd><p>Temperature of the substrate. 
+The default is :  323.15.</p>
+</dd>
+</dl>
+<section id="id59">
+<h3>Returns<a class="headerlink" href="#id59" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>thermalData<span class="classifier">array of size (nTimeStep, nElemsTOT)</span></dt><dd><p>Evolution of the elements temperature throughout the simulation.
+thermalData[tk] = element temperature at time step tk
+thermalData[:, i] = temperature of the ith element throughout the simulation</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.thermaldata.get_data2tamb">
+<span class="sig-prename descclassname"><span class="pre">modules.thermaldata.</span></span><span class="sig-name descname"><span class="pre">get_data2tamb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataFiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nElems</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nLayers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tbuild</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tsubstrate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">323.15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tamb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">293.15</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/thermaldata.html#get_data2tamb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.thermaldata.get_data2tamb" title="Link to this definition"></a></dt>
+<dd><p>Function for importing the results files of the rapid thermal simulation model in the form of a numpy array.
+Here an additional time step is added in order to cool time the structure to room temperature.
+This is usefull for processes where the structure is printed on a heating plate such as FDM of PLA.
+The temperature of the elements at the time steps where thy don’t physically exist is set to the build temperature.</p>
+<section id="id60">
+<h3>Parameters<a class="headerlink" href="#id60" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>dataFiles<span class="classifier">list</span></dt><dd><p>Number of time step in the thermal simulation.</p>
+</dd>
+<dt>nElems<span class="classifier">int</span></dt><dd><p>Number of elements per layer.
+nElems = nNodes - 1</p>
+</dd>
+<dt>nLayers<span class="classifier">int</span></dt><dd><p>Number of layer in the structure.</p>
+</dd>
+<dt>Tbuild<span class="classifier">float, optional</span></dt><dd><p>Temperature of deposition of the material during the process.
+For a FDM (PLA) process its = 353.15, for a metal process its = 2463.060825.</p>
+</dd>
+<dt>Tsubstrate<span class="classifier">int, optional</span></dt><dd><p>Temperature of the substrate. 
+The default is :  323.15.</p>
+</dd>
+<dt>Tamb<span class="classifier">int, optional</span></dt><dd><p>Temperature of the room.</p>
+</dd>
+</dl>
+</section>
+<section id="id61">
+<h3>Returns<a class="headerlink" href="#id61" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>thermalData<span class="classifier">array of size (nTimeStep, nElemsTOT)</span></dt><dd><p>Evolution of the elements temperature throughout the simulation.
+thermalData[tk] = element temperature at time step tk
+thermalData[:, i] = temperature of the ith element throughout the simulation</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.thermaldata.temperature">
+<span class="sig-prename descclassname"><span class="pre">modules.thermaldata.</span></span><span class="sig-name descname"><span class="pre">temperature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tab_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nElems</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nLayers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tbuild</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2463.060825</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tsubstrate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">323.15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_f</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/thermaldata.html#temperature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.thermaldata.temperature" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-modules.weld">
+<span id="modules-weld"></span><h2>modules.weld<a class="headerlink" href="#module-modules.weld" title="Link to this heading"></a></h2>
+<p>Module containing the welding functions of the QuadWire model</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.weld.bcs_matrix">
+<span class="sig-prename descclassname"><span class="pre">modules.weld.</span></span><span class="sig-name descname"><span class="pre">bcs_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">U0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Sw</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/weld.html#bcs_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.weld.bcs_matrix" title="Link to this definition"></a></dt>
+<dd><p>Function that builds the dof removing matrix.</p>
+<section id="id62">
+<h3>Parameters<a class="headerlink" href="#id62" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>U0<span class="classifier">array of size (nCoord, nParticule, nNodes*nLayers)</span></dt><dd><p>Boundary conditions for particles attached to each node : NaN when the particule has no imposed bc. Particules are indexed as {TL,TR,BL,BR}.</p>
+</dd>
+<dt>Sw<span class="classifier">sparse matrix of shape (nNodesTot*nNodeDof, nNodesTot*nNodeDof)</span></dt><dd><p>Inter-wire welding matrix / wire connectivity matrix.</p>
+</dd>
+</dl>
+</section>
+<section id="id63">
+<h3>Returns<a class="headerlink" href="#id63" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Y<span class="classifier">sparse matrix of size (nNodesTot*nNodeDof, nNodesTot*nNodeDof/2) </span></dt><dd><p>/2 because two particules are used to weld two wires
+Degrees of freedom removing matrix.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.weld.weldnode_matrices">
+<span class="sig-prename descclassname"><span class="pre">modules.weld.</span></span><span class="sig-name descname"><span class="pre">weldnode_matrices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Elems</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncElems</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/weld.html#weldnode_matrices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.weld.weldnode_matrices" title="Link to this definition"></a></dt>
+<dd><p>Function that builds the node welding matrices</p>
+<section id="id64">
+<h3>Parameters<a class="headerlink" href="#id64" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Elems<span class="classifier">array of size  (nElemTot, elemOrder +1)</span></dt><dd><p>Index of the pair of nodes forming an element.</p>
+</dd>
+<dt>uncElems<span class="classifier">array of size or (nElemTot, elemOrder +1)</span></dt><dd><p>Index of the pair of nodes forming an uncoupled element.</p>
+</dd>
+</dl>
+</section>
+<section id="id65">
+<h3>Returns<a class="headerlink" href="#id65" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Sni<span class="classifier">sparse matrix of shape (nUncNodes, nNodesTot)</span></dt><dd><p>Welding matrix for the node functions.</p>
+</dd>
+<dt>Sn<span class="classifier">sparse matrix of shape (nUncNodes*nNodeDof, nNodesTot*nNodeDof) </span></dt><dd><p>Welding matrix for the degrees of freedom 3*4*Sni.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="modules.weld.weldwire_matrix">
+<span class="sig-prename descclassname"><span class="pre">modules.weld.</span></span><span class="sig-name descname"><span class="pre">weldwire_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nNodesTot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weldDof</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/modules/weld.html#weldwire_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#modules.weld.weldwire_matrix" title="Link to this definition"></a></dt>
+<dd><p>Function that builds the wire welding matrices
+nNodesTOT = X.shape[0]</p>
+<section id="id66">
+<h3>Parameters<a class="headerlink" href="#id66" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>nNodesTot<span class="classifier">int</span></dt><dd><p>Number of total nodes discretising the structures.</p>
+</dd>
+<dt>weldDOF<span class="classifier">array of size (nNodes*(nLayers-1)*2, 4) - number of layer interface * two welding conditions</span></dt><dd><p>Array listing the welding conditions between the wires 
+The k^th welding condition is given by : weldDOF[k] = [indexNode1, node1Particule, indexNode2, node2Particule] which means that the the node1Particule chosen is welded to the node2Particule
+There are nInterface*nNodes*2 welding conditions in between wires.</p>
+</dd>
+</dl>
+</section>
+<section id="id67">
+<h3>Returns<a class="headerlink" href="#id67" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Sw<span class="classifier">sparse matrix of shape (nNodesTot*nNodeDof, nNodesTot*nNodeDof)</span></dt><dd><p>Inter-wire welding matrix / wire connectivity matrix</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to QuadWire’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="qw_structure.html" class="btn btn-neutral float-right" title="qw_structure module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Rafaël Viano.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

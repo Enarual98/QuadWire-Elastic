@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>modules.weld &mdash; QuadWire 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=8d563738"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            QuadWire
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">modules package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">QuadWire</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">modules.weld</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for modules.weld</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Module containing the welding functions of the QuadWire model &quot;&quot;&quot;</span>
+<span class="c1">#%% import packages</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy</span> <span class="k">as</span> <span class="nn">sp</span>
+
+<span class="c1">#%% Added during &quot;lab to market&quot; : DocString + Verif test to do</span>
+
+<div class="viewcode-block" id="weldnode_matrices">
+<a class="viewcode-back" href="../../modules.html#modules.weld.weldnode_matrices">[docs]</a>
+<span class="k">def</span> <span class="nf">weldnode_matrices</span><span class="p">(</span><span class="n">Elems</span><span class="p">,</span> <span class="n">uncElems</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that builds the node welding matrices </span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Elems : array of size  (nElemTot, elemOrder +1)</span>
+<span class="sd">        Index of the pair of nodes forming an element.</span>
+<span class="sd">    uncElems : array of size or (nElemTot, elemOrder +1)</span>
+<span class="sd">        Index of the pair of nodes forming an uncoupled element.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Sni : sparse matrix of shape (nUncNodes, nNodesTot)</span>
+<span class="sd">        Welding matrix for the node functions.</span>
+<span class="sd">    Sn : sparse matrix of shape (nUncNodes*nNodeDof, nNodesTot*nNodeDof) </span>
+<span class="sd">        Welding matrix for the degrees of freedom 3*4*Sni.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nElems</span> <span class="o">=</span> <span class="n">Elems</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">nNodesByElem</span> <span class="o">=</span> <span class="n">Elems</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    
+    <span class="c1"># Weld uncoupled nodes</span>
+    <span class="n">Sni</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">nElems</span> <span class="o">*</span> <span class="n">nNodesByElem</span><span class="p">,)),</span> <span class="p">(</span><span class="n">uncElems</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">Elems</span><span class="o">.</span><span class="n">flatten</span><span class="p">())))</span>
+    
+    <span class="n">Sn</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">12</span><span class="p">),</span> <span class="n">Sni</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">Sni</span><span class="p">,</span> <span class="n">Sn</span></div>
+
+
+<div class="viewcode-block" id="weldwire_matrix">
+<a class="viewcode-back" href="../../modules.html#modules.weld.weldwire_matrix">[docs]</a>
+<span class="k">def</span> <span class="nf">weldwire_matrix</span><span class="p">(</span><span class="n">nNodesTot</span><span class="p">,</span> <span class="n">weldDof</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that builds the wire welding matrices</span>
+<span class="sd">    nNodesTOT = X.shape[0]</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    nNodesTot : int</span>
+<span class="sd">        Number of total nodes discretising the structures.</span>
+<span class="sd">    weldDOF : array of size (nNodes*(nLayers-1)*2, 4) - number of layer interface * two welding conditions</span>
+<span class="sd">        Array listing the welding conditions between the wires </span>
+<span class="sd">        The k^th welding condition is given by : weldDOF[k] = [indexNode1, node1Particule, indexNode2, node2Particule] which means that the the node1Particule chosen is welded to the node2Particule</span>
+<span class="sd">        There are nInterface*nNodes*2 welding conditions in between wires.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Sw : sparse matrix of shape (nNodesTot*nNodeDof, nNodesTot*nNodeDof)</span>
+<span class="sd">        Inter-wire welding matrix / wire connectivity matrix </span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># There is welding conditions to apply</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">weldDof</span><span class="p">)</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>  
+        <span class="c1"># DOF indexes</span>
+        <span class="n">wDOFidx</span> <span class="o">=</span> <span class="n">weldDof</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span> <span class="o">+</span> <span class="n">nNodesTot</span> <span class="o">*</span> <span class="n">weldDof</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]]</span> 
+        <span class="c1"># Repeat for all 3 coordinates</span>
+        <span class="n">wDOFidx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">wDOFidx</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">nNodesTot</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">3</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">wDOFidx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  
+        <span class="n">noWeld</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">12</span> <span class="o">*</span> <span class="n">nNodesTot</span><span class="p">),</span> <span class="n">wDOFidx</span><span class="o">.</span><span class="n">flatten</span><span class="p">())))</span>
+        <span class="c1"># Build welding matrix</span>
+        <span class="n">ii</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">noWeld</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">wDOFidx</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">wDOFidx</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]))</span>
+        <span class="n">jj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">noWeld</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">wDOFidx</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">wDOFidx</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]))</span>
+        <span class="n">Sw</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">ii</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="p">(</span><span class="n">ii</span><span class="p">,</span> <span class="n">jj</span><span class="p">)),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span> <span class="o">*</span> <span class="n">nNodesTot</span><span class="p">,</span> <span class="mi">12</span> <span class="o">*</span> <span class="n">nNodesTot</span><span class="p">))</span>
+    <span class="c1"># No welded DOFs, gives Identity matrix</span>
+    <span class="k">else</span><span class="p">:</span>  
+        <span class="n">Sw</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">12</span> <span class="o">*</span> <span class="n">nNodesTot</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">Sw</span></div>
+
+    
+<div class="viewcode-block" id="bcs_matrix">
+<a class="viewcode-back" href="../../modules.html#modules.weld.bcs_matrix">[docs]</a>
+<span class="k">def</span> <span class="nf">bcs_matrix</span><span class="p">(</span><span class="n">U0</span><span class="p">,</span> <span class="n">Sw</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that builds the dof removing matrix.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    U0 : array of size (nCoord, nParticule, nNodes*nLayers)</span>
+<span class="sd">        Boundary conditions for particles attached to each node : NaN when the particule has no imposed bc. Particules are indexed as {TL,TR,BL,BR}. </span>
+<span class="sd">    Sw : sparse matrix of shape (nNodesTot*nNodeDof, nNodesTot*nNodeDof)</span>
+<span class="sd">        Inter-wire welding matrix / wire connectivity matrix.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Y : sparse matrix of size (nNodesTot*nNodeDof, nNodesTot*nNodeDof/2) </span>
+<span class="sd">        /2 because two particules are used to weld two wires</span>
+<span class="sd">        Degrees of freedom removing matrix.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Reshape U0 (3, 4, nNodes*nLayers) matrix as a vector</span>
+    <span class="n">u0</span> <span class="o">=</span> <span class="n">U0</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+    <span class="c1"># True/False table storing remaining DOF</span>
+    <span class="n">freeDOF</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">u0</span><span class="p">)</span>   
+    <span class="c1"># Boundary conditions matrix</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">diags</span><span class="p">(</span><span class="n">freeDOF</span> <span class="o">*</span> <span class="mi">1</span><span class="p">)</span> 
+    <span class="c1"># Delete DOFs</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">Sw</span> <span class="o">@</span> <span class="n">B</span>
+    <span class="n">isZero</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">isZero</span><span class="p">))</span><span class="o">.</span><span class="n">flatten</span><span class="p">()]</span>
+    <span class="k">return</span> <span class="n">Y</span></div>
+
+
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Rafaël Viano.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
