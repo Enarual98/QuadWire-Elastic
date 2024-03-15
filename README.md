@@ -1,2 +1,2 @@
 # QuadWire-Elastic
- QuadWire elsastic code and examples 
+ QuadWire elastic code and examples 
