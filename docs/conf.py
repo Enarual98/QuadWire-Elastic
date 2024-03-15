@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.abspath(".."))
 
 project = 'QuadWire'
 copyright = '2024, Rafaël Viano'
-author = 'Rafaël Viano'
+author = 'Rafaël Viano, Laurane Preumont, Pierre Margerit, Daniel Weisz-Patrault'
 release = '1.0.0'
 
 # -- General configuration ---------------------------------------------------
