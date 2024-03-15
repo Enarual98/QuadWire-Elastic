@@ -50,7 +50,7 @@ color3 = "#556B2F"
 
 ### Parameters
 buildDirection = "h"
-path = r"C:\Users\viano\Documents\GitHub\QuadWire-Elastic\thermal_data\carpet"
+path = r".\thermal_data\carpet"
 
 ### Computation
 U, Eps, Sigma, elementEnergyDensity, qp2elem, nQP, x, Elems = qwa.additive(path, L, Hn, Hb, meshType, nNodes, nLayers,
@@ -93,7 +93,7 @@ colorbar.set_label('$\sigma_{tn}$ [MPa]')
 #%% Wall 
 ### Parameters
 buildDirection = "v"
-path = r"C:\Users\viano\Documents\GitHub\QuadWire-Elastic\thermal_data\wall"
+path = r".\thermal_data\wall"
 
 ### Computation
 U, Eps, Sigma, elementEnergyDensity, qp2elem, nQP, x, Elems = qwa.additive(path, L, Hn, Hb, meshType, nNodes, nLayers,

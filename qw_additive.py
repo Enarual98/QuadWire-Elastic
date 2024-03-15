@@ -74,7 +74,7 @@ def additive(path, L, Hn, Hb, meshType, nNodes, nLayers, buildDirection, elemOrd
     Tg = 328
     Tsub = 323.15
     ## Time
-    tau_final =  np.int(np.ceil((nNodes-1)*3/4)) # 0 #  10 # 0 #
+    tau_final =  int(np.ceil((nNodes-1)*3/4)) # 0 #  10 # 0 #
     nPas = (nNodes-1)*nLayers + tau_final
     
     ## Chemin des donnees thermique
