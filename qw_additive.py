@@ -1,7 +1,8 @@
 """ 
-QuadWire function for culculation during printing 
+QuadWire function for calculation during printing
 """
 #%% Imports
+import os
 import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
@@ -10,12 +11,17 @@ from modules import mesh, fem, weld, behavior, plot, thermaldata, forces
 
 #%% Function
 
-def additive(path, L, Hn, Hb, meshType, nNodes, nLayers, buildDirection, elemOrder, quadOrder, optimizedBehavior, toPlot, clrmap="stt", scfplot = 10 ):
+def additive(path, L, Hn, Hb, beadType, layerType, stacking_offset, zigzag, nNodes, nLayers_h, nLayers_v, elemOrder, quadOrder, optimizedBehavior, toPlot=False, clrmap="stt", scfplot = 10 ):
 
     ### Discretization and meshing
-    X, Elems, U0 = mesh.meshing_first_layer(L, nNodes, meshType, False) 
-    X, Elems, U0 = mesh.mesh_structure(X, Elems, U0, nLayers, nNodes, buildDirection, Hb)
-    weldDof = mesh.welding_conditions(X, Elems, U0, nLayers, nNodes, buildDirection, Hb)
+    X, Elems, U0 = mesh.mesh_first_bead(L, nNodes, beadType, False)
+    X, Elems, U0 = mesh.mesh_first_layer(X, Elems, U0, nNodes, nLayers_h, nLayers_v, Hn, Hb, layerType, zigzag)
+    X, Elems, U0 = mesh.mesh_structure(X, Elems, U0, nNodes, nLayers_h, nLayers_v, Hn, Hb, zigzag)
+
+    X = mesh.mesh_offset(X, Elems, nNodes, nLayers_h, nLayers_v, zigzag, stacking_offset, layerType)
+
+    weldDof = mesh.welding_conditions(X, Elems, U0, nNodes, nLayers_h, nLayers_v, Hn, Hb, zigzag)
+
     if elemOrder==2:
         X, Elems, U0 = mesh.second_order_discretization(X, Elems, U0)
     Xunc, uncElems = mesh.uncouple_nodes(X, Elems)
@@ -29,7 +35,7 @@ def additive(path, L, Hn, Hb, meshType, nNodes, nLayers, buildDirection, elemOrd
     nNodeDOF = nCoord * nParticules 
     nDOF = nNodeDOF * nUncNodes
 
-    ### Usefull matrices
+    ### Useful matrices
     ## Integration matrices
     xiQ, wQ = fem.element_quadrature(quadOrder)
     XIQ, WQ = fem.fullmesh_quadrature(quadOrder, nElemsTOT)
@@ -46,7 +52,7 @@ def additive(path, L, Hn, Hb, meshType, nNodes, nLayers, buildDirection, elemOrd
     Y = weld.bcs_matrix(U0, Sw)
     ## Assembly matrix node_alpha to qp_beta
     Assemble = Ta @ P.T @ Sn 
-    elem2node = fem.elem2node(nNodes, nLayers)
+    elem2node = fem.elem2node(nNodes, nLayers_h, nLayers_v)
 
     
     ### Behavior
@@ -62,7 +68,6 @@ def additive(path, L, Hn, Hb, meshType, nNodes, nLayers, buildDirection, elemOrd
     Btot = behavior.derivation_xi(Hn, Hb, N, Ds)
     Ctot = behavior.derivation_chi(Hn, Hb, N, Ds)
 
-
     if optimizedBehavior :
         Rxi, Rchi = behavior.optimization_Rxi_Rchi()
     else : 
@@ -74,15 +79,15 @@ def additive(path, L, Hn, Hb, meshType, nNodes, nLayers, buildDirection, elemOrd
     Tg = 328
     Tsub = 323.15
     ## Time
-    tau_final =  int(np.ceil((nNodes-1)*3/4)) # 0 #  10 # 0 #
-    nPas = (nNodes-1)*nLayers + tau_final
+    tau_final =  int(np.ceil((nNodes-1)*3/4)) # 10 # 0 #
+    nPas = (nNodes-1) * nLayers_h * nLayers_v + tau_final
     
-    ## Chemin des donnees thermique
-    data_path = [path + '/temp_' + str(k) + ".txt" for k in range(1,nPas+1)]
-    
-    ## Appeler la fonction pour lire les fichiers
-    Telem = thermaldata.get_data2tamb(data_path, nNodes-1, nLayers, Tbuild, Tsub)
-    # Compute the dT_n = T_n - T_n-1
+    ## path to thermal data
+    data_path = [os.path.join(path, file_name) for file_name in os.listdir(path) if os.path.isfile(os.path.join(path, file_name))] #[path + f"temp_{str(k).zfill(4)}.txt" for k in range(1,nPas+1)]
+
+    ## Read files
+    Telem = thermaldata.get_data2tamb(data_path, nNodes - 1, nLayers_h, nLayers_v, Tbuild, Tsub)
+    # Compute dT_n = T_n - T_n-1
     dTelem = thermaldata.delta_elem_transition_vitreuse(Telem, Tbuild, Tg) 
     nPas = dTelem.shape[0]    
 
@@ -103,9 +108,8 @@ def additive(path, L, Hn, Hb, meshType, nNodes, nLayers, buildDirection, elemOrd
         fig = plt.figure()
         ax = plt.axes(projection='3d', proj_type='ortho')
         ax.set_box_aspect((np.ptp(x[:, 0]), np.ptp(x[:, 1]*scfplot), np.ptp(x[:, 2]*scfplot)))
-        y = x 
-        
-        srf, tri = plot.plotMesh(ax, L, y, Elems, color='none', edgecolor='none', outer=False)
+
+        srf, tri = plot.plotMesh(ax, L, x, Elems, color='none', edgecolor='black', outer=False)
         plt.show()
     
     
@@ -149,7 +153,7 @@ def additive(path, L, Hn, Hb, meshType, nNodes, nLayers, buildDirection, elemOrd
         Kchi = behavior.assembly_behavior(Rchi, Ctot, Wa)
         K = Kxi + Kchi
         K = Assemble.T @ K @ Assemble
-        yKy = Y.T @ K @ Y  # Deleting non usefull dof
+        yKy = Y.T @ K @ Y  # Deleting non useful dof
 
         ## Force vector 
         f = np.zeros((nUncNodes * nNodeDOF, 1))
@@ -159,7 +163,7 @@ def additive(path, L, Hn, Hb, meshType, nNodes, nLayers, buildDirection, elemOrd
         f = f_thermal
         f = Assemble.T @ f
         fbc = f - K @ u00 
-        yfbc = Y.T @ fbc  # Deleting non usefull dof
+        yfbc = Y.T @ fbc  # Deleting non useful dof
 
         ## Solve
         vs = sp.sparse.linalg.spsolve(yKy, yfbc)
@@ -199,7 +203,9 @@ def additive(path, L, Hn, Hb, meshType, nNodes, nLayers, buildDirection, elemOrd
                 sigmaplot = sp.sparse.linalg.lsqr(N @ Sni, Sigma[nQP*3:nQP*4])[0][:, None]
             elif clrmap == "stb" :
                 sigmaplot = sp.sparse.linalg.lsqr(N @ Sni, Sigma[nQP*4:nQP*5])[0][:, None]
-            
+            elif clrmap == "temp" :
+                sigmaplot = sp.sparse.linalg.lsqr(N @ Sni, Telem_instant)[0][:, None]
+
             clr = sigmaplot[:, None] * [[1, 1, 1, 1]]
             clr = clr / (Hn * Hb)
 
@@ -217,9 +223,9 @@ def additive(path, L, Hn, Hb, meshType, nNodes, nLayers, buildDirection, elemOrd
             srf.set_array(np.mean(clr.flatten()[tri], axis=1))
             srf.set_clim(np.nanmin(clr), np.nanmax(clr))   
         
-            plt.pause(0.005)
+            #plt.pause(0.005)
             
-        print('actualTime:', actualTime)
+        #print('actualTime:', actualTime)
 
     ### Plot parameters
     if toPlot :
@@ -237,6 +243,8 @@ def additive(path, L, Hn, Hb, meshType, nNodes, nLayers, buildDirection, elemOrd
             colorbar.set_label('$\sigma_{tn}$ [MPa]')
         elif clrmap == "stb" :
             colorbar.set_label('$\sigma_{tb}$ [MPa]')
+        elif clrmap == "temp" :
+            colorbar.set_label('$temperature$ [K]')
     
     ###  Reconstruct internal forces
     f1, f2, f3, f4, F1, F2, F3, F4 = forces.internal_forces(Sigma, Hn, Hb)

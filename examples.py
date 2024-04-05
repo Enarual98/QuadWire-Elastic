@@ -4,12 +4,17 @@ Reproduces the figures in the article
 """
 #%%
 # clear workspace
+
 from IPython import get_ipython
 get_ipython().magic('reset -sf')
+
+import time
 
 #%% Imports
 import numpy as np
 import scipy as sp
+from scipy import sparse
+from scipy.sparse import linalg
 import matplotlib.pyplot as plt
 import qw_additive as qwa
 from modules import mesh, fem, weld, behavior, plot, thermaldata, forces
@@ -19,12 +24,11 @@ from modules import mesh, fem, weld, behavior, plot, thermaldata, forces
 L = 50 # length in mm
 Hn = 0.1 # width of the section in mm
 Hb = 0.1 # height of the section in mm
-meshType = "linear" # linear for a rectiligne wall - other options are sinus, circular 
-
-
+meshType = "linear" # linear for a rectilinear wall - other options are sinus, circular
+zigzag = False
 ### Mesh
 nLayers = 15 # number of layers
-nNodes = 51 # number of nodes per layers 
+nNodes = 51 # number of nodes per layers
 
 ### Integration
 elemOrder = 1
@@ -37,7 +41,7 @@ alpha = 1.13e-5  # thermal expansion coefficient
 behavior_opt = True # use the optimized behavior
 
 ### Plot
-toPlot = False # True if you want to see the evolution of the field during printing
+toPlot = True # True if you want to see the evolution of the field during printing
 colormap = "stt" # Field to observe on the graph
 
 scalefig = 10
@@ -49,19 +53,24 @@ color3 = "#556B2F"
 #%% Carpet 
 
 ### Parameters
-buildDirection = "h"
+nLayers_v = 1
+nLayers_h = nLayers
+stacking_offset = np.zeros((nLayers_v,2))  # offset between successive layers along t and n (nLayers_v, 2)
+
 path = r".\thermal_data\carpet"
 
 ### Computation
-U, Eps, Sigma, elementEnergyDensity, qp2elem, nQP, x, Elems = qwa.additive(path, L, Hn, Hb, meshType, nNodes, nLayers,
-            buildDirection, elemOrder, quadOrder, behavior_opt, toPlot, clrmap = colormap,
-            scfplot = scalefig)
+tic = time.time()
+U, Eps, Sigma, elementEnergyDensity, qp2elem, nQP, x, Elems = qwa.additive(path, L, Hn, Hb, meshType, layerType, stacking_offset, zigzag, nNodes, nLayers_h, nLayers_v, elemOrder, quadOrder, behavior_opt, toPlot, clrmap=colormap,
+                                                                           scfplot=scalefig)
+tac = time.time()
+print('carpet:', tac-tic, 's, ', (tac-tic)/60, 'min')
 
 #%% Plot
 ### Plot stt
 projection_index = 0
 sigmaplot = qp2elem @ Sigma[projection_index*nQP:(projection_index+1)*nQP]
-clr = sigmaplot[:,0]            
+clr = sigmaplot[:,0]
 clr = clr / (Hn * Hb)
 
 
@@ -90,16 +99,18 @@ colorbar = plt.colorbar(srf, pad=0.15)
 colorbar.set_label('$\sigma_{tn}$ [MPa]')
 
 
-#%% Wall 
+#%% Wall
 ### Parameters
-buildDirection = "v"
+nLayers_h = 1
+nLayers_v = nLayers
 path = r".\thermal_data\wall"
 
 ### Computation
-U, Eps, Sigma, elementEnergyDensity, qp2elem, nQP, x, Elems = qwa.additive(path, L, Hn, Hb, meshType, nNodes, nLayers,
-            buildDirection, elemOrder, quadOrder, behavior_opt, toPlot, clrmap = colormap,
-            scfplot = scalefig)
-
+tic = time.time()
+U, Eps, Sigma, elementEnergyDensity, qp2elem, nQP, x, Elems = qwa.additive(path, L, Hn, Hb, meshType, layerType, stacking_offset, zigzag, nNodes, nLayers_h, nLayers_v, elemOrder, quadOrder, behavior_opt, toPlot, clrmap=colormap,
+                                                                           scfplot=scalefig)
+tac = time.time()
+print('wall :', tac-tic, 's, ', (tac-tic)/60, 'min')
 
 #%% Plot
 ### Plot stt
@@ -186,5 +197,3 @@ plt.plot(sig3D_tb_1, label="$\sigma_{tb}$")
 plt.xticks(major_ticks, labels=etiquettes, rotation=45, ha='left', fontsize=12)
 plt.legend()
 plt.grid()
-
-

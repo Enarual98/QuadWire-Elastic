@@ -110,7 +110,7 @@ def internal_forces(Sigma, Hn, Hb):
 
 def sigma3D(Sigma, Hn, Hb): 
     """
-    Function that reconstruct the 3D cauchy stress tensor
+    Function that reconstructs the 3D cauchy stress tensor
 
     Parameters
     ----------

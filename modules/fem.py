@@ -1,4 +1,4 @@
-""" Module defining the finite elements components and the matrices of transitions between different function evaluation locations (node, quadrature points) and coordinate systems (primary, secondary) of the QuadWire program """
+""" Module defining the finite element components and the transition matrices between different function evaluation locations (node, quadrature points) and coordinate systems (primary, secondary) of the QuadWire program """
 
 #%% import packages
 import numpy as np
@@ -17,7 +17,7 @@ def shape_function(xi, elemOrder):
     xi : array of size ((nNodes-1)*nLayers, 1)
         Coordinates of the quadrature points.
     elemOrder : int
-        Element order : number of nodes that forms an element 
+        Element order : number of nodes that form an element
         Options are 1 for two-nodes P1 element and 2 for three-nodes P2 element
 
     Returns
@@ -45,7 +45,7 @@ def shape_function_derivative(xi, elemOrder):
     xi : array of size ((nNodes-1)*nLayers, 1)
         Coordinates of the quadrature points.
     elemOrder : int, optional
-        Element order : number of nodes that forms an element 
+        Element order : number of nodes that form an element
         Options are 1 for two-nodes P1 element and 2 for three-nodes P2 element
 
     Returns
@@ -98,7 +98,7 @@ def fullmesh_quadrature(quadOrder, nElemsTot):
     quadOrder : int
         Element quadrature order.
     nElemsTot : int
-        Numbrer of element in the whole structure.
+        Number of element in the whole structure.
 
     Returns
     -------
@@ -117,14 +117,14 @@ def fullmesh_quadrature(quadOrder, nElemsTot):
 
 def integration_matrices(X, Elems, elemOrder, quadOrder):
     """
-    Return some usefull sparse matrix that will be use in the FEM solver.
+    Return some useful sparse matrix that will be used in the FEM solver.
     Reminder : nQP = quadOrder*(nNodes-1)*nLayers = quadOrder * nElemTot
                nUncNodes = 2*(nNodes -2)*nLayers + nLayers*2
     
     Parameters
     ----------
     X : array of size (nNodes*nLayers, nCoord)
-        Coordinates of each nodes in the global reference (t,n,b).
+        Coordinates of each node in the global reference (t,n,b).
     Elems : array of size ((nNodes - 1)*nLayers, elemOrder +1 ) or (nElemTot, elemOrder +1)
         Index of the pair of nodes forming an element.
     elemOrder : int
@@ -195,22 +195,22 @@ def integration_matrices(X, Elems, elemOrder, quadOrder):
 
 def alpha2beta_matrices(Hn, Hb, nNodesTot, nUncNodes):
     """
-    Function that returns the matrices that enables the primary to secondary transfer for vectors variables 
+    Function that returns the matrices that enable the primary to secondary transfer for vector variables
 
     Parameters
     ----------
     Hn : int
-        Characteristic length of the cord section in n direction.
+        Characteristic length of the bead section in n direction.
     Hb : int
-        Characteristic length of the cord section in b direction.
+        Characteristic length of the bead section in b direction.
     nNodesTot : int
         Number of coupled nodes in the mesh
     nUncNodes : int
         Number uncoupled nodes in the mesh.
     TDim : bool 
-        Bool that indicates whether or not the dimensions have been taken into account in T, the alpha to beta transition matrix
+        Boolean that indicates whether the dimensions have been taken into account in T, the alpha to beta transition matrix
         False for the optimization induced behavior - T without Hn Hb
-        True for the homogeneization induced behavior - T with Hn Hb
+        True for the homogenization induced behavior - T with Hn Hb
 
     Returns
     -------
@@ -219,7 +219,7 @@ def alpha2beta_matrices(Hn, Hb, nNodesTot, nUncNodes):
         u_beta = vec(U_beta) = Tv.vec(u_alpha) 
     
     Tc : sparse matrix of shape (nNodeDOF*nNodesTot, nNodeDOF*nNodesTot)
-        Transition matrix between the alpha and beta coordinate systems for coupled vecotrs 
+        Transition matrix between the alpha and beta coordinate systems for coupled vectors
     
     Ta : sparse matrix of shape (nNodeDOF*nUncNodes, nNodeDOF*nUncNodes)
         Transition matrix between the alpha and beta coordinate systems for uncoupled vectors
@@ -302,7 +302,7 @@ def local2global_matrices(Xunc, uncElems, elemOrder):
 
     return t, n, b, P
 
-def elem2node(nNodes, nLayers):
+def elem2node(nNodes, nLayers_h, nLayers_v):
     """
     Function that returns the element to node transition matrix.
 
@@ -319,7 +319,7 @@ def elem2node(nNodes, nLayers):
         Transition matrix between the element and the nodes
 
     """
-    
+    nLayers = nLayers_h * nLayers_v
     nn = np.ones(2*(nNodes-2) + 2)
     nn[1:-1] = 0.5
     ii = np.arange(0, nNodes-1)[:,np.newaxis] * [1,1]

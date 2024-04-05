@@ -12,9 +12,9 @@ def derivation_xi(Hn, Hb, N, Ds): #strain matrix ? B_chi B_xi
     Parameters
     ----------
     Hn : float
-        Length of the section of the bead in the n direction.
+        Length of the section of the bead in the n direction (width).
     Hb : float
-        Length of the section of the bead in the b direction.
+        Length of the section of the bead in the b direction (height).
     N : sparse matrix of shape (nQP, nUncNodes) 
         Function of interpolation at the quadrature points : f(Xqp) = N.f(Xunc)
     Ds : sparse matrix of shape (nQP, nUncNodes)
@@ -43,9 +43,9 @@ def derivation_chi(Hn, Hb, N, Ds):
     Parameters
     ----------
     Hn : float
-        Length of the section of the bead in the n direction.
+        Length of the section of the bead in the n direction (width).
     Hb : float
-        Length of the section of the bead in the b direction.
+        Length of the section of the bead in the b direction (height).
     N : sparse matrix of shape (nQP, nUncNodes) 
         Function of interpolation at the quadrature points : f(Xqp) = N.f(Xunc)
     Ds : sparse matrix of shape (nQP, nUncNodes)
@@ -70,7 +70,7 @@ def derivation_chi(Hn, Hb, N, Ds):
 
 def homogeneization_Rxi(Hn, Hb, lmbda, mu):
     """
-    Function that returns the elemental material behavior matrix for deformation obtained through an homogeneisation process
+    Function that returns the elementary material behavior matrix for deformation obtained through the homogenisation process
 
     Parameters
     ----------
@@ -86,7 +86,7 @@ def homogeneization_Rxi(Hn, Hb, lmbda, mu):
     Returns
     -------
     Rxi : sparse matrix of shape (6, 6)
-        Elemental material behavior matrix for deformation obtained through an homogeneisation process.
+        Elemental material behavior matrix for deformation obtained through the homogenisation process.
 
     """
     Rxi = Hn * Hb * sp.linalg.block_diag(lmbda * np.ones((3, 3)) + 2 * mu * np.eye(3), 4 * mu * np.eye(3))  # (6x6)
@@ -96,7 +96,7 @@ def homogeneization_Rxi(Hn, Hb, lmbda, mu):
 
 def homogenization_Rchi(L, Hn, Hb, lmbda, mu, nNodes):
     """
-    Function that returns the elemental material behavior matrix for curvature obtained through an homogeneisation process
+    Function that returns the elementary material behavior matrix for curvature obtained through the homogenisation process
 
     Parameters
     ----------
@@ -116,7 +116,7 @@ def homogenization_Rchi(L, Hn, Hb, lmbda, mu, nNodes):
     Returns
     -------
     Rchi : sparse matrix of shape (9, 9)
-        Elemental material behavior matrix for curvature obtained through an homogeneisation process.
+        Elementary material behavior matrix for curvature obtained through the homogenisation process.
     """
     
     ln = Hn / np.sqrt(12)
@@ -226,14 +226,14 @@ def optimization_Rxi_Rchi(material="PLA"):
 
 def assembly_behavior(R, B, W):
     """
-    Function that assembles the elemental behaviour matrix into a global matrix (for the entire mesh).
+    Function that assembles the elementary behaviour matrix into a global matrix (for the entire mesh).
     It has been contracted with the derivation matrix B so that Sigma = K U
 
     Parameters
     ----------
     R : sparse matrix of shape (nInc, nInc)
-        Elemental material behavior matrix
-        nInc can be from different size : 6 for Rxi, 9 for Rchi, 3 for Rgamma
+        Elementary material behavior matrix
+        nInc can be of different sizes : 6 for Rxi, 9 for Rchi, 3 for Rgamma
 
     B : sparse matrix of shape (nInc*nQP, nNodeDOF)
        Derivation matrix : first gradient for xi, second gradient for chi, third for gamma      
@@ -252,7 +252,7 @@ def assembly_behavior(R, B, W):
 
 #%% Thermal
 
-def dTfcn(x, dT, loadType, nLayers):
+def dTfcn(x, dT, loadType, nLayers_h, nLayers_v):
     """
     Function which returns the thermal loading at the quadrature points in the alpha configuration.
     This fonction is used to compute the entire structure undergoing a variation of temperature.
@@ -274,6 +274,7 @@ def dTfcn(x, dT, loadType, nLayers):
         Variation of temperature at each quadrature points for each particule.
 
     """
+    nLayers = nLayers_h * nLayers_v
     if loadType == "uniform" :
         dTalpha = dT * np.ones((x.shape[0], 4))
            

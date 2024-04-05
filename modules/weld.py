@@ -2,6 +2,7 @@
 #%% import packages
 import numpy as np
 import scipy as sp
+from scipy import sparse
 
 #%% Added during "lab to market" : DocString + Verif test to do
 
@@ -45,7 +46,7 @@ def weldwire_matrix(nNodesTot, weldDof):
         Number of total nodes discretising the structures.
     weldDOF : array of size (nNodes*(nLayers-1)*2, 4) - number of layer interface * two welding conditions
         Array listing the welding conditions between the wires 
-        The k^th welding condition is given by : weldDOF[k] = [indexNode1, node1Particule, indexNode2, node2Particule] which means that the the node1Particule chosen is welded to the node2Particule
+        The k^th welding condition is given by : weldDOF[k] = [indexNode1, node1Particule, indexNode2, node2Particule] which means that the node1Particule chosen is welded to the node2Particule
         There are nInterface*nNodes*2 welding conditions in between wires.
 
     Returns
@@ -54,7 +55,7 @@ def weldwire_matrix(nNodesTot, weldDof):
         Inter-wire welding matrix / wire connectivity matrix 
 
     """
-    # There is welding conditions to apply
+    # There are welding conditions to apply
     if np.array(weldDof).size != 0:  
         # DOF indexes
         wDOFidx = weldDof[:, [0, 2]] + nNodesTot * weldDof[:, [1, 3]] 

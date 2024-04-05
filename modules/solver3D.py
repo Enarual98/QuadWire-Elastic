@@ -23,7 +23,7 @@ def cauchyTM(L, Hn, Hb, nNodes, nLayers, meshType, thermalLoading) :
     debug = False  # display debugging elements
     
     if meshType == "linear" :
-    # Single straight bead welded on the platform
+        # Single straight bead welded on the platform
         X = np.linspace(0, L, nNodes)[:, np.newaxis] * [1, 0, 0]  # straight line along X1
         Elems = np.arange(nNodes - 1)[:, np.newaxis] + [0, 1]  # simple elements
         U0 = np.tile([[[np.nan], [np.nan], [0], [0]]], (3, 1, nNodes))  # clamp all {BL,BR} wires
@@ -37,7 +37,7 @@ def cauchyTM(L, Hn, Hb, nNodes, nLayers, meshType, thermalLoading) :
         U0 = np.tile([[[np.nan],[np.nan],[0],[0]]],(3,1,nNodes)) # clamp all {BL,BR} wires
 
     elif meshType == "sinus" :
-        # Sinusoidal bead
+        # Single sinusoidal bead welded on the platform
         x1 = np.linspace(0,L,nNodes)[:,np.newaxis]
         X = np.hstack((x1,.25*L*np.sin(1.0*x1/L*2*np.pi),x1*0))
         Elems = np.arange(nNodes-1)[:,np.newaxis]+[0,1] # simple elements
@@ -97,7 +97,7 @@ def cauchyTM(L, Hn, Hb, nNodes, nLayers, meshType, thermalLoading) :
     U0_3D[np.logical_and(iXn == 0, iXb == nHb - 1), :] = U0_1D[:, :, 0]  # TL edge
     U0_3D[np.logical_and(iXn == nHn - 1, iXb == nHb - 1), :] = U0_1D[:, :, 1]  # TR edge
 
-     # Weld duplicated nodes within a tolerance
+    # Weld duplicated nodes within a tolerance
     tree = sp.spatial.KDTree(X)
     nodepairs = np.array(list(tree.query_pairs(weldDistTol)))
 

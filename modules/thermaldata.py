@@ -1,21 +1,22 @@
 """ 
-Module for importing thermal simulation resulTsubstrate from the fast method to the QuadWire finite element kernel
+Module for importing thermal simulation results from the fast thermal simulation model to the QuadWire finite element kernel
 """
 
-#%% Import packages
+# %% Import packages
 import numpy as np
 
-#%% 
+
+# %%
 # Ouvrir le fichier en mode lecture
 # path = r"C:\Users\viano\Documents\Thermique_data\DATA_10_1\temp_10.txt"
 # nom_fichier = "donnees.txt"  # Remplacez "donnees.txt" par le nom de votre fichier
 # liste_de_donnees = []
 
 
-def get_data(dataFiles, nElems, nLayers, Tbuild, Tsubstrate = 323.15):
+def get_data(dataFiles, nElems, nLayers_h, nLayers_v, Tbuild, Tsubstrate=323.15):
     """
-    Function for importing the results files of the rapid thermal simulation model in the form of a numpy array.
-    The temperature of the elements at the time steps where thy don't physically exist is set to the build temperature.
+    Function for importing the results files of the fast thermal simulation model in the form of a numpy array.
+    The temperature of the elements at the time steps when they don't physically exist is set to the build temperature.
     Parameters
     ----------
     dataFiles : list
@@ -23,11 +24,13 @@ def get_data(dataFiles, nElems, nLayers, Tbuild, Tsubstrate = 323.15):
     nElems : int
         Number of elements per layer.
         nElems = nNodes - 1 
-    nLayers : int
-        Number of layer in the structure.
+    nLayers_h : int
+        Number of layers of the structure in the horizontal direction.
+    nLayers_v : int
+        Number of layers of the structure in the build direction.
     Tbuild : float, optional
         Temperature of deposition of the material during the process.
-        For a FDM (PLA) process its = 353.15, for a metal process its = 2463.060825.
+        For a FDM (PLA) process it is = 353.15, for a metal process it is = 2463.060825.
     Tsubstrate : int, optional
         Temperature of the substrate. 
         The default is :  323.15.
@@ -35,45 +38,47 @@ def get_data(dataFiles, nElems, nLayers, Tbuild, Tsubstrate = 323.15):
     Returns
     -------
     thermalData : array of size (nTimeStep, nElemsTOT)
-        Evolution of the elements temperature throughout the simulation.
+        Evolution of the elements' temperature throughout the simulation.
         thermalData[tk] = element temperature at time step tk
         thermalData[:, i] = temperature of the ith element throughout the simulation
     """
-    nTimeStep = len(dataFiles) 
-    thermalData =  Tbuild*(np.ones((nTimeStep ,nElems*nLayers))) #- np.diag([1 for k in range(n)]) ) # np.zeros((n,n))
+    nLayers = nLayers_h * nLayers_v
+    nTimeStep = len(dataFiles)
+    thermalData = Tbuild * (np.ones((nTimeStep, nElems * nLayers)))  # - np.diag([1 for k in range(n)]) ) # np.zeros((n,n))
     for i in range(nTimeStep):
         try:
             with open(dataFiles[i], 'r') as fichier:
-                # Lire chaque ligne du fichier
+                # Read each line of the file
                 lignes = fichier.readlines()
-                # Parcourir chaque ligne et ajouter son contenu à la liste totale
-                for j in range(len(lignes)):    
-                    thermalData[i,j] = float(lignes[j].strip()) #- Tref
-            # Fermer le fichier
+                # Browse each line and add its contents to the final list
+                for j in range(len(lignes)):
+                    thermalData[i, j] = float(lignes[j].strip())  # - Tref
+            # Close file
             fichier.close()
         except FileNotFoundError:
-            print("Le fichier n'a pas été trouvé.")
+            print("File couldn't be found.")
         except Exception as e:
-            print(f"Une erreur s'est produite pour le fichier {str(e)}") 
+            print(f"Error occurred for file {str(e)}")
         thermalData = np.array(thermalData)
     return thermalData
 
-def get_data2tamb(dataFiles, nElems, nLayers, Tbuild, Tsubstrate = 323.15, Tamb = 293.15):
+
+def get_data2tamb(dataFiles, nElems, nLayers_h, nLayers_v, Tbuild, Tsubstrate=323.15, Tamb=293.15):
     """
-    Function for importing the results files of the rapid thermal simulation model in the form of a numpy array.
-    Here an additional time step is added in order to cool time the structure to room temperature.
-    This is usefull for processes where the structure is printed on a heating plate such as FDM of PLA.
-    The temperature of the elements at the time steps where thy don't physically exist is set to the build temperature.
+    Function for importing the results files of the fast thermal simulation model in the form of a numpy array.
+    Here an additional time step is added in order to include cool time of the structure to room temperature.
+    This is useful for processes where the structure is printed on a heating plate such as FDM of PLA.
+    The temperature of the elements at the time steps when they don't physically exist is set to the build temperature.
 
     Parameters
     ----------
     dataFiles : list
-        Number of time step in the thermal simulation.
+        list of data files for every time step in the thermal simulation. nTimeStep = len(dataFiles)
     nElems : int
         Number of elements per layer.
         nElems = nNodes - 1 
     nLayers : int
-        Number of layer in the structure.
+        Number of layers in the structure.
     Tbuild : float, optional
         Temperature of deposition of the material during the process.
         For a FDM (PLA) process its = 353.15, for a metal process its = 2463.060825.
@@ -86,63 +91,63 @@ def get_data2tamb(dataFiles, nElems, nLayers, Tbuild, Tsubstrate = 323.15, Tamb 
     Returns
     -------
     thermalData : array of size (nTimeStep, nElemsTOT)
-        Evolution of the elements temperature throughout the simulation.
+        Evolution of the elements' temperature throughout the simulation.
         thermalData[tk] = element temperature at time step tk
         thermalData[:, i] = temperature of the ith element throughout the simulation
     """
-    nTimeStep = len(dataFiles) 
-    thermalData =  Tbuild*(np.ones((nTimeStep +1 ,nElems*nLayers))) #- np.diag([1 for k in range(n)]) ) # np.zeros((n,n))
-    thermalData[-1] = Tamb * np.ones(nElems*nLayers)
+    nLayers = nLayers_h * nLayers_v
+    nTimeStep = len(dataFiles)
+    thermalData = Tbuild * (np.ones((nTimeStep, nElems * nLayers)))  # Tbuild * (np.ones((nTimeStep + 1, nElems * nLayers)))  # - np.diag([1 for k in range(n)]) ) # np.zeros((n,n))
+    thermalData[-1] = Tamb * np.ones(nElems * nLayers)
     for i in range(nTimeStep):
         try:
             with open(dataFiles[i], 'r') as fichier:
-                # Lire chaque ligne du fichier
+                # Read each line of the file
                 lignes = fichier.readlines()
-                # Parcourir chaque ligne et ajouter son contenu à la liste totale
-                for j in range(len(lignes)):    
-                    thermalData[i,j] = float(lignes[j].strip()) #- Tref
-            # Fermer le fichier
+                # Browse each line and add its contents to the final list
+                for j in range(len(lignes)):
+                    thermalData[i, j] = float(lignes[j].strip())  # - Tref
+            # Close file
             fichier.close()
         except FileNotFoundError:
-            print("Le fichier n'a pas été trouvé.")
+            print("File couldn't be found.")
         except Exception as e:
-            print(f"Une erreur s'est produite pour le fichier {str(e)}") 
+            print(f"Error occurred for file {str(e)}")
         thermalData = np.array(thermalData)
     return thermalData
 
-
-def elem2node(Telem, nElems, nLayers):
+def elem2node(Telem, nElems, nLayers_h, nLayers_v):
     """
     Function used to pass from the temperature at the elements to the temperature at the nodes by linear interpolation.
 
     Parameters
     ----------
     Telem : array of size (nTimeStep, nElemsTOT)
-        Evolution of the elements temperature throughout the simulation.
+        Evolution of the elements' temperature throughout the simulation.
     nElems : int
         Number of elements per layer.
         nElems = nNodes - 1 
     nLayers : int
-        Number of layer in the structure.
+        Number of layers in the structure.
 
     Returns
     -------
     Tnode : array of size (nTimeStep, nNodesTOT)
-        Evolution of the nodes temperature throughout the simulation.
+        Evolution of the nodes' temperature throughout the simulation.
         Tnode[tk] = node temperature at time step tk
         Tnode[:, i] = temperature of the ith node throughout the simulation
 
     """
+    nLayers = nLayers_h * nLayers_v
     nTimeStep = Telem.shape[0]
-    Tnode = np.zeros((nTimeStep, (nElems+1)*nLayers))
+    Tnode = np.zeros((nTimeStep, (nElems + 1) * nLayers))
     for j in range(nLayers):
-        for i in range(1,nElems):
-            Tnode[:,j*(nElems+1) +i] = (Telem[:,j*nElems + (i-1)] + Telem[:,j*nElems + i])/2
-            
-        Tnode[:,j*(nElems+1)] = 2* Telem[:, j*nElems] - Tnode[:, j*(nElems +1) + 1]
-        Tnode[:,j*(nElems+1) +nElems] = 2* Telem[:, j*nElems + i] - Tnode[:, j*(nElems+1) +nElems - 1]
-    return Tnode
+        for i in range(1, nElems):
+            Tnode[:, j * (nElems + 1) + i] = (Telem[:, j * nElems + (i - 1)] + Telem[:, j * nElems + i]) / 2
 
+        Tnode[:, j * (nElems + 1)] = 2 * Telem[:, j * nElems] - Tnode[:, j * (nElems + 1) + 1]
+        Tnode[:, j * (nElems + 1) + nElems] = 2 * Telem[:, j * nElems + i] - Tnode[:, j * (nElems + 1) + nElems - 1]
+    return Tnode
 
 
 def delta_time(T, Tbuild):
@@ -169,10 +174,11 @@ def delta_time(T, Tbuild):
     nTimeStep = T.shape[0] - 1
     nPointsTOT = T.shape[1]
     dT = np.zeros((nTimeStep, nPointsTOT))
-    dT[0] = T[0] -  Tbuild * np.ones(nPointsTOT) 
+    dT[0] = T[0] - Tbuild * np.ones(nPointsTOT)
     for i in range(1, nTimeStep):
-        dT[i] = T[i] - T[i-1]
+        dT[i] = T[i] - T[i - 1]
     return dT
+
 
 def delta_elem_transition_vitreuse(T, Tbuild, Tg):
     """
@@ -202,24 +208,22 @@ def delta_elem_transition_vitreuse(T, Tbuild, Tg):
         Time differential of the points temperature throughout the simulation.
 
     """
-    nTimeStep = T.shape[0] 
+    nTimeStep = T.shape[0]
     nPointsTOT = T.shape[1]
     dT = np.zeros((nTimeStep, nPointsTOT))
-    dT[0] = 0 * np.ones(nPointsTOT) 
-    
-    for i in range(1,nTimeStep):
+    dT[0] = 0 * np.ones(nPointsTOT)
+
+    for i in range(1, nTimeStep):
         for j in range(nPointsTOT):
-            if T[i][j] < Tg :
-                dT[i][j] = T[i][j] - T[i-1][j]
-            else :
-                dT[i][j] = 0 
+            if T[i][j] < Tg:
+                dT[i][j] = T[i][j] - T[i - 1][j]
+            else:
+                dT[i][j] = 0
     return dT
 
 
-def temperature(tab_path, nElems, nLayers, tau = 0, Tbuild = 2463.060825, Tsubstrate = 323.15, tau_f = 0):
+def temperature(tab_path, nElems, nLayers, tau=0, Tbuild=2463.060825, Tsubstrate=323.15, tau_f=0):
     Telem = get_data(tab_path, nElems, nLayers, Tbuild, Tsubstrate)
     Tnode = elem2node(Telem, nElems, nLayers)
     dTnode = delta_time(Tnode, Tbuild)
     return Telem, Tnode, dTnode
-
-
